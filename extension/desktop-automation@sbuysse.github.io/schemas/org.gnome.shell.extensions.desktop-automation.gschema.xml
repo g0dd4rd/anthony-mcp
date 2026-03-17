@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.desktop-automation"
+          path="/org/gnome/shell/extensions/desktop-automation/">
+    <key name="consent-acknowledged" type="b">
+      <default>false</default>
+      <summary>Whether the user has acknowledged the consent dialog</summary>
+    </key>
+  </schema>
+</schemalist>
