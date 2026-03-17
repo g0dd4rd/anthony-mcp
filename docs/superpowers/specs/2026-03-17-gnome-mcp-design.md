@@ -12,11 +12,11 @@ No MCP server exists for GNOME Wayland desktop automation. The closest equivalen
 
 Two independently installable components:
 
-1. **GNOME Shell Extension** (`desktop-automation@sbuysse.github.io`) — runs inside the compositor, exposes a D-Bus interface for screenshots, window management, and input injection
+1. **GNOME Shell Extension** (`desktop-automation@gnomemcp.github.io`) — runs inside the compositor, exposes a D-Bus interface for screenshots, window management, and input injection
 2. **Python MCP Server** (`gnome-desktop-mcp`) — translates MCP tool calls into D-Bus calls, distributed via PyPI
 
 ```
-Claude Code  ──stdio/MCP──▶  gnome-desktop-mcp (Python)  ──D-Bus──▶  desktop-automation@sbuysse.github.io
+Claude Code  ──stdio/MCP──▶  gnome-desktop-mcp (Python)  ──D-Bus──▶  desktop-automation@gnomemcp.github.io
                               (pip package)                            (GNOME Shell extension)
 ```
 
@@ -33,7 +33,7 @@ Claude Code  ──stdio/MCP──▶  gnome-desktop-mcp (Python)  ──D-Bus�
 ```
 Gnome-MCP/
 ├── extension/
-│   └── desktop-automation@sbuysse.github.io/
+│   └── desktop-automation@gnomemcp.github.io/
 │       ├── metadata.json
 │       ├── extension.js          # enable/disable, D-Bus export
 │       ├── dbus.js               # D-Bus service implementation
@@ -298,7 +298,7 @@ Users can specify `_R` variants explicitly (e.g. "Control_R") to target the righ
 
 ```json
 {
-  "uuid": "desktop-automation@sbuysse.github.io",
+  "uuid": "desktop-automation@gnomemcp.github.io",
   "name": "Desktop Automation",
   "description": "Exposes D-Bus API for desktop automation (screenshots, window management, input injection). Designed for use with MCP-compatible AI assistants.",
   "shell-version": ["45", "46", "47", "48", "49"],

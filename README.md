@@ -35,7 +35,7 @@ cd gnome-mcp
 Then log out and back in (required for Wayland), and enable:
 
 ```bash
-gnome-extensions enable desktop-automation@sbuysse.github.io
+gnome-extensions enable desktop-automation@gnomemcp.github.io
 ```
 
 ### MCP server only (from PyPI)
@@ -116,7 +116,7 @@ Add to `~/.claude/settings.json`:
 
 ## Architecture
 
-The GNOME Shell extension (`desktop-automation@sbuysse.github.io`) runs inside the Wayland compositor. It exports `io.github.gnomemcp.DesktopAutomation` on the session D-Bus with privileged access to:
+The GNOME Shell extension (`desktop-automation@gnomemcp.github.io`) runs inside the Wayland compositor. It exports `io.github.gnomemcp.DesktopAutomation` on the session D-Bus with privileged access to:
 
 - `Shell.Screenshot` — silent screenshots (no permission dialog)
 - `Meta.Window` — window management

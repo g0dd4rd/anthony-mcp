@@ -61,7 +61,7 @@ class DbusClient:
         except Exception as e:
             raise ExtensionNotFoundError(
                 "GNOME Shell extension not installed or not enabled. "
-                "Install desktop-automation@sbuysse.github.io and restart GNOME Shell."
+                "Install desktop-automation@gnomemcp.github.io and restart GNOME Shell."
             ) from e
 
     def _call(self, method: str, *args):

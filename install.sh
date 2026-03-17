@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-EXTENSION_UUID="desktop-automation@sbuysse.github.io"
+EXTENSION_UUID="desktop-automation@gnomemcp.github.io"
 EXTENSION_DIR="$HOME/.local/share/gnome-shell/extensions/$EXTENSION_UUID"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
