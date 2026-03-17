@@ -59,7 +59,10 @@ export function typeText(text) {
             time += 10000;
             vkbd.notify_key_unichar(time, char.codePointAt(0), Clutter.KeyState.RELEASED);
         } else {
-            const keyval = char.codePointAt(0) | 0x01000000;
+            const cp = char.codePointAt(0);
+            // ASCII printable (0x20–0x7E): use codepoint directly as X11 keysym.
+            // Non-ASCII: use Unicode keysym convention (0x01000000 | codepoint).
+            const keyval = (cp >= 0x20 && cp <= 0x7E) ? cp : (cp | 0x01000000);
             vkbd.notify_keyval(time, keyval, Clutter.KeyState.PRESSED);
             time += 10000;
             vkbd.notify_keyval(time, keyval, Clutter.KeyState.RELEASED);

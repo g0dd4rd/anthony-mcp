@@ -26,7 +26,9 @@ export function listWindows() {
             width: rect.width,
             height: rect.height,
             minimized: win.minimized,
-            maximized: win.get_maximized() !== 0,
+            maximized: typeof win.get_maximized === 'function'
+                ? win.get_maximized() !== 0
+                : (win.maximized_horizontally || win.maximized_vertically || false),
             focused: win.has_focus(),
             above: win.is_above(),
             monitor: win.get_monitor(),
@@ -48,7 +50,9 @@ export function getWindow(win) {
         width: rect.width,
         height: rect.height,
         minimized: win.minimized,
-        maximized: win.get_maximized() !== 0,
+        maximized: typeof win.get_maximized === 'function'
+            ? win.get_maximized() !== 0
+            : (win.maximized_horizontally || win.maximized_vertically || false),
         focused: win.has_focus(),
         above: win.is_above(),
         canClose: win.can_close(),
@@ -68,7 +72,7 @@ export function listWorkspaces() {
         const ws = manager.get_workspace_by_index(i);
         workspaces.push({
             index: i,
-            name: ws.get_name() || `Workspace ${i + 1}`,
+            name: (typeof ws.get_name === 'function' ? ws.get_name() : null) || `Workspace ${i + 1}`,
             active: i === active,
             nWindows: ws.list_windows().filter(
                 w => w.get_window_type() === Meta.WindowType.NORMAL

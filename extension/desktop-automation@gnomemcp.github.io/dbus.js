@@ -267,7 +267,11 @@ export class DbusService {
 
     ListWindowsAsync(_params, invocation) {
         if (!this._checkEnabled(invocation, 'ListWindows')) return;
-        invocation.return_value(GLib.Variant.new('(s)', [JSON.stringify(Windows.listWindows())]));
+        try {
+            invocation.return_value(GLib.Variant.new('(s)', [JSON.stringify(Windows.listWindows())]));
+        } catch (e) {
+            invocation.return_error_literal(Gio.DBusError, Gio.DBusError.FAILED, e.message);
+        }
     }
 
     GetWindowAsync([windowId], invocation) {
@@ -301,7 +305,10 @@ export class DbusService {
                 `${ERROR_DOMAIN}.WindowNotFound: No window with ID ${windowId}`);
             return;
         }
-        if (win.get_maximized())
+        const isMaximized = typeof win.get_maximized === 'function'
+            ? win.get_maximized() !== 0
+            : (win.maximized_horizontally || win.maximized_vertically || false);
+        if (isMaximized)
             win.unmaximize(Meta.MaximizeFlags.BOTH);
         win.move_resize_frame(false, x, y, width, height);
         invocation.return_value(GLib.Variant.new('(b)', [true]));
@@ -369,7 +376,11 @@ export class DbusService {
 
     ListWorkspacesAsync(_params, invocation) {
         if (!this._checkEnabled(invocation, 'ListWorkspaces')) return;
-        invocation.return_value(GLib.Variant.new('(s)', [JSON.stringify(Windows.listWorkspaces())]));
+        try {
+            invocation.return_value(GLib.Variant.new('(s)', [JSON.stringify(Windows.listWorkspaces())]));
+        } catch (e) {
+            invocation.return_error_literal(Gio.DBusError, Gio.DBusError.FAILED, e.message);
+        }
     }
 
     ActivateWorkspaceAsync([index], invocation) {
