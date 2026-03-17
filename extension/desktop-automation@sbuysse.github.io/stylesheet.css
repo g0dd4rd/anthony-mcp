@@ -1,0 +1,19 @@
+/* Desktop Automation extension styles */
+
+.desktop-automation-indicator {
+  /* Default: idle grey */
+}
+
+.desktop-automation-indicator.active {
+  color: #e74c3c;
+}
+
+.desktop-automation-indicator.idle {
+  color: #95a5a6;
+}
+
+.desktop-automation-indicator.flash {
+  color: #e74c3c;
+  transition: opacity 200ms ease-in-out;
+  animation: flash 500ms ease-in-out 2;
+}
