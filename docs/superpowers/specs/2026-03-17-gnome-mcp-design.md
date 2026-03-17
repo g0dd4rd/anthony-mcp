@@ -66,8 +66,8 @@ Gnome-MCP/
 
 ## D-Bus Interface Contract
 
-**Interface:** `io.github.sbuysse.DesktopAutomation`
-**Object path:** `/io/github/sbuysse/DesktopAutomation`
+**Interface:** `io.github.gnomemcp.DesktopAutomation`
+**Object path:** `/io/github/gnomemcp/DesktopAutomation`
 **Bus:** Session bus (exported on the `org.gnome.Shell` connection from within the extension process)
 
 All methods use the `MethodNameAsync(params, invocation)` pattern for async D-Bus responses.
@@ -154,7 +154,7 @@ This dialog appears once. The choice is persisted in the extension's GSettings s
 ### D-Bus Access Gating
 
 - Every D-Bus method checks `_automationEnabled` flag before executing
-- When disabled: all methods return `io.github.sbuysse.DesktopAutomation.Error.Disabled`
+- When disabled: all methods return `io.github.gnomemcp.DesktopAutomation.Error.Disabled`
 - `Ping()`, `GetEnabled()`, and `SetEnabled()` always work regardless of the flag
 
 ### Activity Logging
@@ -327,7 +327,7 @@ Users can specify `_R` variants explicitly (e.g. "Control_R") to target the righ
 - No subprocess spawning from extension
 - Clean enable/disable lifecycle (all state created in enable, destroyed in disable)
 - No bundled binaries
-- D-Bus interface uses own namespace (`io.github.sbuysse`) — not GNOME's
+- D-Bus interface uses own namespace (`io.github.gnomemcp`) — not GNOME's
 - First-use consent dialog for transparency
 - Privacy indicator follows GNOME HIG for status area items
 - Activity logging with no payload capture
