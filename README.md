@@ -2,6 +2,8 @@
 
 Desktop automation for GNOME Wayland via MCP. Take screenshots, manage windows, and inject keyboard/mouse input from AI assistants like Claude Code.
 
+[![GNOME Desktop MCP server](https://glama.ai/mcp/servers/sbuysse/gnome-desktop-mcp/badges/card.svg)](https://glama.ai/mcp/servers/sbuysse/gnome-desktop-mcp)
+
 ```
 Claude Code  ──MCP──▶  gnome-desktop-mcp (Python)  ──D-Bus──▶  GNOME Shell Extension
 ```
