@@ -10,7 +10,7 @@ from gnome_desktop_mcp.utils import friendly_to_keyval, translate_combo, file_to
 
 mcp = FastMCP(
     "gnome-desktop-automation",
-    description="GNOME desktop automation: screenshots, window management, input injection",
+    instructions="GNOME desktop automation: screenshots, window management, input injection",
 )
 
 _client: DbusClient | None = None

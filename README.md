@@ -146,4 +146,4 @@ gdbus call --session --dest org.gnome.Shell \
 
 ## License
 
-GPL-3.0
+[GPL-3.0](LICENSE)
