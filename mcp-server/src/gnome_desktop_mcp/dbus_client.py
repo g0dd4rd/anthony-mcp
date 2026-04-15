@@ -1,8 +1,6 @@
 """D-Bus client for the Desktop Automation extension."""
 
 import json
-from dasbus.connection import SessionMessageBus
-from dasbus.error import DBusError
 
 IFACE = "io.github.gnomemcp.DesktopAutomation"
 BUS_NAME = "org.gnome.Shell"
@@ -34,7 +32,7 @@ class InputFailedError(Exception):
     pass
 
 
-def _translate_error(e: DBusError) -> Exception:
+def _translate_error(e: Exception) -> Exception:
     """Translate a D-Bus error to a typed exception."""
     msg = str(e)
     if "Disabled" in msg:
@@ -55,7 +53,10 @@ class DbusClient:
     TIMEOUT_MS = 5000  # 5 second timeout
 
     def __init__(self):
+        # Imported lazily so that `tools/list` works in environments without
+        # PyGObject / GNOME libraries (e.g. Glama's inspection sandbox).
         try:
+            from dasbus.connection import SessionMessageBus
             bus = SessionMessageBus()
             self._proxy = bus.get_proxy(BUS_NAME, OBJECT_PATH)
         except Exception as e:
@@ -65,6 +66,7 @@ class DbusClient:
             ) from e
 
     def _call(self, method: str, *args):
+        from dasbus.error import DBusError
         try:
             return getattr(self._proxy, method)(*args, timeout=self.TIMEOUT_MS)
         except DBusError as e:

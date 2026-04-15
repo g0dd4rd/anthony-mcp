@@ -9,7 +9,7 @@ from dasbus.error import DBusError
 
 @pytest.fixture
 def mock_proxy():
-    with patch("gnome_desktop_mcp.dbus_client.SessionMessageBus") as mock_bus_cls:
+    with patch("dasbus.connection.SessionMessageBus") as mock_bus_cls:
         mock_bus = MagicMock()
         mock_bus_cls.return_value = mock_bus
         proxy = MagicMock()
@@ -52,7 +52,7 @@ def test_error_window_not_found():
 
 
 def test_connection_refused():
-    with patch("gnome_desktop_mcp.dbus_client.SessionMessageBus") as mock_bus_cls:
+    with patch("dasbus.connection.SessionMessageBus") as mock_bus_cls:
         mock_bus_cls.side_effect = Exception("Connection refused")
         with pytest.raises(ExtensionNotFoundError):
             DbusClient()
