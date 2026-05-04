@@ -1,6 +1,9 @@
 """MCP server for GNOME desktop automation."""
 
 import json
+import time
+import threading
+import re
 from mcp.server.fastmcp import FastMCP
 from gnome_desktop_mcp.dbus_client import (
     DbusClient, AutomationDisabledError, ExtensionNotFoundError,
@@ -451,22 +454,80 @@ def cleanup_screenshots() -> str:
 
 
 @mcp.tool()
-def send_notification(summary: str, body: str = "") -> str:
-    """Send a desktop notification.
+def send_notification(summary: str, body: str = "", delay: str = "") -> str:
+    """Send a desktop notification immediately or after a delay.
 
     Args:
         summary: Notification title/headline (required).
         body: Notification message body (optional).
+        delay: Time delay before sending (optional).
+               Examples: "5 minutes", "1 hour", "30 seconds", "2 hours 30 minutes"
+               If empty, sends immediately.
 
     Returns:
         Success or error message.
     """
     try:
         client = _get_client()
-        success = client.send_notification(summary, body)
-        if success:
-            return f"Notification sent: {summary}"
-        return "Notification failed"
+
+        # If no delay, send immediately
+        if not delay or delay.strip() == "":
+            success = client.send_notification(summary, body)
+            if success:
+                return f"Notification sent: {summary}"
+            return "Notification failed"
+
+        # Parse delay and schedule notification
+        delay_lower = delay.lower().strip()
+        total_seconds = 0
+
+        # Match hours
+        hours_match = re.search(r'(\d+)\s*(?:hour|hr|hours|hrs)', delay_lower)
+        if hours_match:
+            total_seconds += int(hours_match.group(1)) * 3600
+
+        # Match minutes
+        minutes_match = re.search(r'(\d+)\s*(?:minute|min|minutes|mins)', delay_lower)
+        if minutes_match:
+            total_seconds += int(minutes_match.group(1)) * 60
+
+        # Match seconds
+        seconds_match = re.search(r'(\d+)\s*(?:second|sec|seconds|secs)', delay_lower)
+        if seconds_match:
+            total_seconds += int(seconds_match.group(1))
+
+        if total_seconds == 0:
+            return f"Error: Could not parse delay '{delay}'. Use format like '5 minutes', '1 hour', '30 seconds'"
+
+        # Start background thread to send notification after delay
+        def send_delayed():
+            time.sleep(total_seconds)
+            client.send_notification(summary, body)
+
+        timer_thread = threading.Thread(target=send_delayed, daemon=True)
+        timer_thread.start()
+
+        # Format delay for confirmation message
+        if total_seconds >= 3600:
+            hours = total_seconds // 3600
+            remaining = total_seconds % 3600
+            minutes = remaining // 60
+            if minutes > 0:
+                delay_text = f"{hours} hour{'s' if hours > 1 else ''} and {minutes} minute{'s' if minutes > 1 else ''}"
+            else:
+                delay_text = f"{hours} hour{'s' if hours > 1 else ''}"
+        elif total_seconds >= 60:
+            minutes = total_seconds // 60
+            remaining = total_seconds % 60
+            if remaining > 0:
+                delay_text = f"{minutes} minute{'s' if minutes > 1 else ''} and {remaining} second{'s' if remaining > 1 else ''}"
+            else:
+                delay_text = f"{minutes} minute{'s' if minutes > 1 else ''}"
+        else:
+            delay_text = f"{total_seconds} second{'s' if total_seconds > 1 else ''}"
+
+        return f"Scheduled notification in {delay_text}: {summary}"
+
     except Exception as e:
         return _handle_error(e)
 
