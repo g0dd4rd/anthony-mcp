@@ -1,7 +1,7 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 
-export function sendNotification(summary, body) {
+export async function sendNotification(summary, body) {
     try {
         // Use notify-send command for reliable notifications
         // This works consistently across GNOME versions
@@ -21,8 +21,8 @@ export function sendNotification(summary, body) {
             Gio.SubprocessFlags.NONE
         );
 
-        // Wait for completion
-        proc.wait_check(null);
+        // Wait for completion asynchronously (non-blocking)
+        await proc.wait_check_async(null);
         return true;
     } catch (e) {
         console.error(`sendNotification failed: ${e.message}`);

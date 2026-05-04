@@ -516,10 +516,10 @@ export class DbusService {
 
     // --- Notifications ---
 
-    SendNotificationAsync([summary, body], invocation) {
+    async SendNotificationAsync([summary, body], invocation) {
         if (!this._checkEnabled(invocation, 'SendNotification')) return;
         try {
-            const success = Notifications.sendNotification(summary, body);
+            const success = await Notifications.sendNotification(summary, body);
             invocation.return_value(GLib.Variant.new('(b)', [success]));
         } catch (e) {
             invocation.return_error_literal(Gio.DBusError, Gio.DBusError.FAILED,
