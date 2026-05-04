@@ -1,4 +1,5 @@
 import Clutter from 'gi://Clutter';
+import Gdk from 'gi://Gdk';
 import GLib from 'gi://GLib';
 
 function _getSeat() {
@@ -26,7 +27,7 @@ export function keyPress(keyval) {
 export function keyCombo(combo) {
     const keys = combo.split('+').map(k => k.trim());
     const keyvals = keys.map(k => {
-        const kv = Clutter.keyval_from_name(k);
+        const kv = Gdk.keyval_from_name(k);
         if (kv === 0)
             throw new Error(`Unknown key name: ${k}`);
         return kv;
@@ -137,7 +138,9 @@ export function mouseScroll(x, y, dx, dy) {
     const vmouse = _createPointer();
     const now = GLib.get_monotonic_time();
     vmouse.notify_absolute_motion(now, x, y);
+    // GNOME Shell 46+ requires scroll_source parameter (5th argument)
     vmouse.notify_scroll_continuous(now + 10000, dx, dy,
+        Clutter.ScrollSource.WHEEL,
         Clutter.ScrollFinishFlags.NONE);
     return true;
 }
