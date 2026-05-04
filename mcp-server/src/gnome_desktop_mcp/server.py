@@ -541,8 +541,8 @@ def get_volume() -> str:
         JSON string with volume level (0-100) and mute status.
     """
     try:
-        client = _get_client()
-        volume_info = client.get_volume()
+        from . import volume_control
+        volume_info = volume_control.get_volume()
         return json.dumps(volume_info)
     except Exception as e:
         return _handle_error(e)
@@ -561,8 +561,8 @@ def set_volume(volume: int, relative: bool = False) -> str:
         Success or error message.
     """
     try:
-        client = _get_client()
-        message = client.set_volume(volume, relative)
+        from . import volume_control
+        message = volume_control.set_volume(volume, relative)
         return message
     except Exception as e:
         return _handle_error(e)
@@ -579,8 +579,8 @@ def mute_volume(mute: bool = True) -> str:
         Success or error message.
     """
     try:
-        client = _get_client()
-        message = client.mute_volume(mute)
+        from . import volume_control
+        message = volume_control.mute_volume(mute)
         return message
     except Exception as e:
         return _handle_error(e)
