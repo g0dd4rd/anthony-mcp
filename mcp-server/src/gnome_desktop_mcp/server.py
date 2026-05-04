@@ -586,6 +586,47 @@ def mute_volume(mute: bool = True) -> str:
         return _handle_error(e)
 
 
+@mcp.tool()
+def media_control(action: str, player: str = "") -> str:
+    """Control media playback (play, pause, skip, etc.) via MPRIS.
+
+    Args:
+        action: Media control action to perform.
+                Valid actions: play, pause, play_pause, stop, next, previous
+        player: Specific player to control (optional).
+                Examples: 'spotify', 'rhythmbox', 'vlc'
+                If empty, uses the first available player.
+
+    Returns:
+        Success or error message.
+    """
+    try:
+        from . import media_control as mc
+        message = mc.media_control(action, player)
+        return message
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool()
+def get_media_status(player: str = "") -> str:
+    """Get current media player status and track information.
+
+    Args:
+        player: Specific player to query (optional).
+                If empty, uses the first available player.
+
+    Returns:
+        JSON string with player name, playback status, and track metadata.
+    """
+    try:
+        from . import media_control as mc
+        status = mc.get_media_status(player)
+        return json.dumps(status)
+    except Exception as e:
+        return _handle_error(e)
+
+
 def main():
     mcp.run(transport="stdio")
 
