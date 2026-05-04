@@ -627,6 +627,26 @@ def get_media_status(player: str = "") -> str:
         return _handle_error(e)
 
 
+@mcp.tool()
+def quick_settings(setting: str, enabled: bool) -> str:
+    """Toggle GNOME quick settings (WiFi, Bluetooth, Dark Mode, Night Light, Do Not Disturb).
+
+    Args:
+        setting: Which setting to toggle.
+                Options: wifi, bluetooth, night_light, dark_style, do_not_disturb
+        enabled: True to enable, False to disable
+
+    Returns:
+        Success or error message.
+    """
+    try:
+        from . import quick_settings as qs
+        message = qs.quick_settings(setting, enabled)
+        return message
+    except Exception as e:
+        return _handle_error(e)
+
+
 def main():
     mcp.run(transport="stdio")
 
