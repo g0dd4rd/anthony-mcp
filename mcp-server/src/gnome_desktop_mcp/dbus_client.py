@@ -98,6 +98,40 @@ class DbusClient:
     def send_notification(self, summary: str, body: str = "") -> bool:
         return self._call("SendNotification", summary, body)
 
+    # --- Volume ---
+
+    def get_volume(self) -> dict:
+        """Get current volume level and mute status.
+
+        Returns:
+            dict with 'volume' (0-100) and 'muted' (bool)
+        """
+        json_str = self._call("GetVolume")
+        return json.loads(json_str)
+
+    def set_volume(self, volume: int, relative: bool = False) -> str:
+        """Set system volume.
+
+        Args:
+            volume: Volume level (0-100 for absolute, -100 to 100 for relative)
+            relative: If True, volume is relative change
+
+        Returns:
+            Success message
+        """
+        return self._call("SetVolume", volume, relative)
+
+    def mute_volume(self, mute: bool = True) -> str:
+        """Mute or unmute system volume.
+
+        Args:
+            mute: True to mute, False to unmute
+
+        Returns:
+            Success message
+        """
+        return self._call("MuteVolume", mute)
+
     # --- Screenshots ---
 
     def screenshot(self, include_cursor: bool = False) -> str:

@@ -5,6 +5,7 @@ import * as Screenshot from './screenshot.js';
 import * as Windows from './windows.js';
 import * as Input from './input.js';
 import * as Notifications from './notifications.js';
+import * as Volume from './volume.js';
 
 const INTERFACE_XML = `
 <node>
@@ -148,6 +149,20 @@ const INTERFACE_XML = `
       <arg type="s" direction="in" name="summary"/>
       <arg type="s" direction="in" name="body"/>
       <arg type="b" direction="out" name="success"/>
+    </method>
+
+    <!-- Volume -->
+    <method name="GetVolume">
+      <arg type="s" direction="out" name="volumeJson"/>
+    </method>
+    <method name="SetVolume">
+      <arg type="i" direction="in" name="volume"/>
+      <arg type="b" direction="in" name="relative"/>
+      <arg type="s" direction="out" name="message"/>
+    </method>
+    <method name="MuteVolume">
+      <arg type="b" direction="in" name="mute"/>
+      <arg type="s" direction="out" name="message"/>
     </method>
 
     <!-- Utility -->
@@ -524,6 +539,42 @@ export class DbusService {
         } catch (e) {
             invocation.return_error_literal(Gio.DBusError, Gio.DBusError.FAILED,
                 `${ERROR_DOMAIN}.NotificationFailed: ${e.message}`);
+        }
+    }
+
+    // --- Volume ---
+
+    GetVolumeAsync(_params, invocation) {
+        if (!this._checkEnabled(invocation, 'GetVolume')) return;
+        try {
+            const volumeInfo = Volume.getVolume();
+            const json = JSON.stringify(volumeInfo);
+            invocation.return_value(GLib.Variant.new('(s)', [json]));
+        } catch (e) {
+            invocation.return_error_literal(Gio.DBusError, Gio.DBusError.FAILED,
+                `${ERROR_DOMAIN}.GetVolumeFailed: ${e.message}`);
+        }
+    }
+
+    SetVolumeAsync([volume, relative], invocation) {
+        if (!this._checkEnabled(invocation, 'SetVolume')) return;
+        try {
+            const message = Volume.setVolume(volume, relative);
+            invocation.return_value(GLib.Variant.new('(s)', [message]));
+        } catch (e) {
+            invocation.return_error_literal(Gio.DBusError, Gio.DBusError.FAILED,
+                `${ERROR_DOMAIN}.SetVolumeFailed: ${e.message}`);
+        }
+    }
+
+    MuteVolumeAsync([mute], invocation) {
+        if (!this._checkEnabled(invocation, 'MuteVolume')) return;
+        try {
+            const message = Volume.muteVolume(mute);
+            invocation.return_value(GLib.Variant.new('(s)', [message]));
+        } catch (e) {
+            invocation.return_error_literal(Gio.DBusError, Gio.DBusError.FAILED,
+                `${ERROR_DOMAIN}.MuteVolumeFailed: ${e.message}`);
         }
     }
 

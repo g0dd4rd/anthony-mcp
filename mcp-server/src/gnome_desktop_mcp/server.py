@@ -4,6 +4,7 @@ import json
 import time
 import threading
 import re
+import subprocess
 from mcp.server.fastmcp import FastMCP
 from gnome_desktop_mcp.dbus_client import (
     DbusClient, AutomationDisabledError, ExtensionNotFoundError,
@@ -528,6 +529,59 @@ def send_notification(summary: str, body: str = "", delay: str = "") -> str:
 
         return f"Scheduled notification in {delay_text}: {summary}"
 
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool()
+def get_volume() -> str:
+    """Get current system volume level and mute status.
+
+    Returns:
+        JSON string with volume level (0-100) and mute status.
+    """
+    try:
+        client = _get_client()
+        volume_info = client.get_volume()
+        return json.dumps(volume_info)
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool()
+def set_volume(volume: int, relative: bool = False) -> str:
+    """Set system volume level.
+
+    Args:
+        volume: Volume level (0-100 for absolute, -100 to 100 for relative).
+        relative: If True, volume is a relative change (+/- from current).
+                 If False, volume is an absolute level (0-100).
+
+    Returns:
+        Success or error message.
+    """
+    try:
+        client = _get_client()
+        message = client.set_volume(volume, relative)
+        return message
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool()
+def mute_volume(mute: bool = True) -> str:
+    """Mute or unmute system volume.
+
+    Args:
+        mute: True to mute, False to unmute.
+
+    Returns:
+        Success or error message.
+    """
+    try:
+        client = _get_client()
+        message = client.mute_volume(mute)
+        return message
     except Exception as e:
         return _handle_error(e)
 
