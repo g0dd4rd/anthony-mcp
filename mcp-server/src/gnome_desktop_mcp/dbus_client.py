@@ -93,6 +93,11 @@ class DbusClient:
     def cleanup_screenshots(self) -> int:
         return self._call("CleanupScreenshots")
 
+    # --- Notifications ---
+
+    def send_notification(self, summary: str, body: str = "") -> bool:
+        return self._call("SendNotification", summary, body)
+
     # --- Screenshots ---
 
     def screenshot(self, include_cursor: bool = False) -> str:

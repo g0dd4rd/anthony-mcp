@@ -4,6 +4,7 @@ import Meta from 'gi://Meta';
 import * as Screenshot from './screenshot.js';
 import * as Windows from './windows.js';
 import * as Input from './input.js';
+import * as Notifications from './notifications.js';
 
 const INTERFACE_XML = `
 <node>
@@ -139,6 +140,13 @@ const INTERFACE_XML = `
       <arg type="i" direction="in" name="y"/>
       <arg type="d" direction="in" name="dx"/>
       <arg type="d" direction="in" name="dy"/>
+      <arg type="b" direction="out" name="success"/>
+    </method>
+
+    <!-- Notifications -->
+    <method name="SendNotification">
+      <arg type="s" direction="in" name="summary"/>
+      <arg type="s" direction="in" name="body"/>
       <arg type="b" direction="out" name="success"/>
     </method>
 
@@ -503,6 +511,19 @@ export class DbusService {
         } catch (e) {
             invocation.return_error_literal(Gio.DBusError, Gio.DBusError.FAILED,
                 `${ERROR_DOMAIN}.InputFailed: ${e.message}`);
+        }
+    }
+
+    // --- Notifications ---
+
+    SendNotificationAsync([summary, body], invocation) {
+        if (!this._checkEnabled(invocation, 'SendNotification')) return;
+        try {
+            const success = Notifications.sendNotification(summary, body);
+            invocation.return_value(GLib.Variant.new('(b)', [success]));
+        } catch (e) {
+            invocation.return_error_literal(Gio.DBusError, Gio.DBusError.FAILED,
+                `${ERROR_DOMAIN}.NotificationFailed: ${e.message}`);
         }
     }
 

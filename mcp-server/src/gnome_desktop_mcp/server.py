@@ -450,6 +450,27 @@ def cleanup_screenshots() -> str:
         return _handle_error(e)
 
 
+@mcp.tool()
+def send_notification(summary: str, body: str = "") -> str:
+    """Send a desktop notification.
+
+    Args:
+        summary: Notification title/headline (required).
+        body: Notification message body (optional).
+
+    Returns:
+        Success or error message.
+    """
+    try:
+        client = _get_client()
+        success = client.send_notification(summary, body)
+        if success:
+            return f"Notification sent: {summary}"
+        return "Notification failed"
+    except Exception as e:
+        return _handle_error(e)
+
+
 def main():
     mcp.run(transport="stdio")
 
