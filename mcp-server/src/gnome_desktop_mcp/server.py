@@ -647,6 +647,25 @@ def quick_settings(setting: str, enabled: bool) -> str:
         return _handle_error(e)
 
 
+@mcp.tool()
+def open_file(path: str) -> str:
+    """Open a file or URL with the default application.
+
+    Args:
+        path: File path or URL to open.
+              Examples: '/home/user/document.pdf', 'https://example.com', '~/Downloads/image.png'
+
+    Returns:
+        Success or error message.
+    """
+    try:
+        from . import open_file as of
+        message = of.open_file(path)
+        return message
+    except Exception as e:
+        return _handle_error(e)
+
+
 def main():
     mcp.run(transport="stdio")
 
