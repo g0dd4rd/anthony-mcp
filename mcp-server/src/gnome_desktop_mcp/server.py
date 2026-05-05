@@ -648,19 +648,40 @@ def quick_settings(setting: str, enabled: bool) -> str:
 
 
 @mcp.tool()
-def open_file(path: str) -> str:
-    """Open a file or URL with the default application.
+def open_file(path: str, search_location: str = "") -> str:
+    """Smart file opener - opens files by path or searches for them.
 
     Args:
-        path: File path or URL to open.
-              Examples: '/home/user/document.pdf', 'https://example.com', '~/Downloads/image.png'
+        path: File path or filename to open.
+              Full path: '/home/user/document.pdf', '~/Downloads/image.png'
+              Filename: 'screenshot.png', 'report.pdf'
+        search_location: Optional folder to search in (Pictures, Documents, Downloads, etc.)
 
     Returns:
         Success or error message.
     """
     try:
         from . import open_file as of
-        message = of.open_file(path)
+        message = of.open_file(path, search_location)
+        return message
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool()
+def open_url(url: str) -> str:
+    """Open a URL in the default web browser.
+
+    Args:
+        url: URL to open. Automatically adds https:// if needed.
+             Examples: 'google.com', 'https://github.com', 'example.com/page'
+
+    Returns:
+        Success or error message.
+    """
+    try:
+        from . import open_url as ou
+        message = ou.open_url(url)
         return message
     except Exception as e:
         return _handle_error(e)
