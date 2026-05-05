@@ -709,6 +709,30 @@ def search_files(query: str, file_type: str = "files", limit: int = 10) -> str:
         return _handle_error(e)
 
 
+@mcp.tool()
+def set_wallpaper(image_path: str) -> str:
+    """Set the desktop wallpaper/background image.
+
+    Sets wallpaper for both light and dark mode.
+
+    Args:
+        image_path: Path to image file.
+                   Full path: '/home/user/Pictures/sunset.jpg'
+                   Tilde path: '~/Pictures/nature.png'
+                   Relative: 'Pictures/photo.jpg' (expands from home directory)
+                   Supported formats: JPG, JPEG, PNG, SVG, BMP, GIF, WEBP, JXL
+
+    Returns:
+        Success message with wallpaper filename.
+    """
+    try:
+        from . import wallpaper
+        result = wallpaper.set_wallpaper(image_path)
+        return result
+    except Exception as e:
+        return _handle_error(e)
+
+
 def main():
     mcp.run(transport="stdio")
 
