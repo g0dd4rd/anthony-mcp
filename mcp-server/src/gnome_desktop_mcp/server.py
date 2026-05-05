@@ -322,6 +322,44 @@ def type_text(text: str) -> str:
 
 
 @mcp.tool()
+def gnome_search(query: str) -> str:
+    """Use GNOME search to find and open apps, files, or settings.
+
+    Opens GNOME's Activities search overlay, types the query, and presses Enter.
+    GNOME will automatically find and open the best match.
+
+    Args:
+        query: Just the app name, file name, or domain name. GNOME search handles fuzzy matching.
+
+    Examples:
+        - Launch apps: "firefox", "text editor", "calculator"
+        - Open files: "screenshot.png", "document.pdf"
+        - Open settings: "wifi", "bluetooth"
+        - Web navigation: "amazon.com", "github.com"
+        - Calculator: "2+2", "15% of 200"
+    """
+    try:
+        client = _get_client()
+
+        # Press Super key to open Activities search
+        combo = translate_combo("Super")
+        client.key_combo(combo)
+        time.sleep(0.3)  # Wait for search overlay to appear
+
+        # Type the search query
+        client.type_text(query)
+        time.sleep(0.2)  # Wait for search results
+
+        # Press Return to activate the top result
+        return_key = friendly_to_keyval("Return")
+        client.key_press(return_key)
+
+        return f"GNOME search: '{query}'"
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool()
 def mouse_move(x: int, y: int) -> str:
     """Move the mouse to absolute screen coordinates."""
     try:
