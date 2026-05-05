@@ -666,6 +666,28 @@ def open_file(path: str) -> str:
         return _handle_error(e)
 
 
+@mcp.tool()
+def search_files(query: str, file_type: str = "files", limit: int = 10) -> str:
+    """Search for files using GNOME file indexing (localsearch/Tracker).
+
+    Args:
+        query: Search query - filename, keywords, or content to search for.
+        file_type: Type of files to search.
+                   Options: files, folders, images, videos, documents, audio, music_albums, music_artists, software
+                   Default: files
+        limit: Maximum number of results (1-50, default: 10)
+
+    Returns:
+        JSON string with search results containing file paths.
+    """
+    try:
+        from . import search_files as sf
+        result = sf.search_files(query, file_type, limit)
+        return result
+    except Exception as e:
+        return _handle_error(e)
+
+
 def main():
     mcp.run(transport="stdio")
 
