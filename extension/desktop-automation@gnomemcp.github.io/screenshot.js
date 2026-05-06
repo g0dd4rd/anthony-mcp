@@ -85,26 +85,29 @@ export function screenshotArea(x, y, width, height, includeCursor, invocation) {
 }
 
 export function pickColor(x, y, invocation) {
-    // Shell.Screenshot.pick_color() is buggy and returns NaN
-    // Use Clutter to directly read pixel from the stage
-    try {
-        log(`[DEBUG pickColor] Received coordinates: x=${x} (${typeof x}), y=${y} (${typeof y})`);
+    const screenshot = new Shell.Screenshot();
 
-        const [r, g, b, a] = global.stage.get_color_at_pos(x, y);
-
-        log(`[DEBUG pickColor] Got color values: r=${r}, g=${g}, b=${b}, a=${a}`);
-
-        invocation.return_value(GLib.Variant.new('(ddd)', [
-            r / 255.0,
-            g / 255.0,
-            b / 255.0,
-        ]));
-    } catch (e) {
-        log(`[DEBUG pickColor] Exception: ${e.message}`);
-        invocation.return_error_literal(
-            Gio.DBusError, Gio.DBusError.FAILED,
-            `ColorPickFailed: ${e.message}`);
-    }
+    // Try using Shell.Screenshot.pick_color with callback
+    screenshot.pick_color(x, y, (source, result) => {
+        try {
+            const [success, color] = screenshot.pick_color_finish(result);
+            if (success && color) {
+                invocation.return_value(GLib.Variant.new('(ddd)', [
+                    color.red,
+                    color.green,
+                    color.blue,
+                ]));
+            } else {
+                invocation.return_error_literal(
+                    Gio.DBusError, Gio.DBusError.FAILED,
+                    'pick_color returned no color');
+            }
+        } catch (e) {
+            invocation.return_error_literal(
+                Gio.DBusError, Gio.DBusError.FAILED,
+                `ColorPickFailed: ${e.message}`);
+        }
+    });
 }
 
 export function cleanupScreenshots() {
