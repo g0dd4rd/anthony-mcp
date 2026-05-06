@@ -189,6 +189,30 @@ const INTERFACE_XML = `
 
 const ERROR_DOMAIN = 'io.github.gnomemcp.DesktopAutomation.Error';
 
+function _formatAppName(wmClass) {
+    if (!wmClass)
+        return 'Screenshot';
+
+    // Remove common prefixes like "org.gnome."
+    let name = wmClass.replace(/^org\.gnome\./i, '')
+                      .replace(/^com\./i, '')
+                      .replace(/^io\./i, '');
+
+    // Split by dots or dashes and take the last part
+    const parts = name.split(/[.\-]/);
+    name = parts[parts.length - 1];
+
+    // Convert camelCase to Title Case
+    name = name.replace(/([a-z])([A-Z])/g, '$1 $2');
+
+    // Capitalize first letter of each word
+    name = name.split(' ')
+               .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+               .join(' ');
+
+    return name || 'Screenshot';
+}
+
 export class DbusService {
     constructor() {
         this._enabled = false;
@@ -259,9 +283,10 @@ export class DbusService {
         const wasMinimized = win.minimized;
         if (wasMinimized) win.unminimize();
         win.activate(global.get_current_time());
+        const appName = _formatAppName(win.get_wm_class());
         GLib.timeout_add(GLib.PRIORITY_DEFAULT, 150, () => {
             const onComplete = wasMinimized ? () => win.minimize() : null;
-            Screenshot.screenshotWindow(includeCursor, includeFrame, invocation, onComplete);
+            Screenshot.screenshotWindow(includeCursor, includeFrame, invocation, onComplete, appName);
             return GLib.SOURCE_REMOVE;
         });
     }

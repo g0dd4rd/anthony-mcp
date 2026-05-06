@@ -5,17 +5,21 @@ import GLib from 'gi://GLib';
 // Use ~/Pictures/Screenshots as the default location
 const PICTURES_DIR = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES);
 const SCREENSHOT_DIR = GLib.build_filenamev([PICTURES_DIR, 'Screenshots']);
-let _counter = 0;
 
 function _ensureDir() {
     GLib.mkdir_with_parents(SCREENSHOT_DIR, 0o700);
 }
 
-function _nextFilename() {
-    _counter++;
+function _formatTimestamp() {
+    const now = GLib.DateTime.new_now_local();
+    return now.format('%Y-%m-%d %H-%M-%S');
+}
+
+function _nextFilename(appName = 'Screenshot') {
+    const timestamp = _formatTimestamp();
     return GLib.build_filenamev([
         SCREENSHOT_DIR,
-        `screenshot-${Date.now()}-${_counter}.png`,
+        `${appName} From ${timestamp}.png`,
     ]);
 }
 
@@ -24,9 +28,9 @@ function _createStream(filepath) {
     return file.replace(null, false, Gio.FileCreateFlags.PRIVATE, null);
 }
 
-export function screenshotFull(includeCursor, invocation) {
+export function screenshotFull(includeCursor, invocation, appName = 'Screenshot') {
     _ensureDir();
-    const filepath = _nextFilename();
+    const filepath = _nextFilename(appName);
     const stream = _createStream(filepath);
     const screenshot = new Shell.Screenshot();
 
@@ -44,9 +48,9 @@ export function screenshotFull(includeCursor, invocation) {
     });
 }
 
-export function screenshotWindow(includeCursor, includeFrame, invocation, onComplete = null) {
+export function screenshotWindow(includeCursor, includeFrame, invocation, onComplete = null, appName = 'Screenshot') {
     _ensureDir();
-    const filepath = _nextFilename();
+    const filepath = _nextFilename(appName);
     const stream = _createStream(filepath);
     const screenshot = new Shell.Screenshot();
 
@@ -66,9 +70,9 @@ export function screenshotWindow(includeCursor, includeFrame, invocation, onComp
     });
 }
 
-export function screenshotArea(x, y, width, height, includeCursor, invocation) {
+export function screenshotArea(x, y, width, height, includeCursor, invocation, appName = 'Screenshot') {
     _ensureDir();
-    const filepath = _nextFilename();
+    const filepath = _nextFilename(appName);
     const stream = _createStream(filepath);
     const screenshot = new Shell.Screenshot();
 
