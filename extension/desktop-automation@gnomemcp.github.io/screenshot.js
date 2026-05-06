@@ -85,22 +85,46 @@ export function screenshotArea(x, y, width, height, includeCursor, invocation) {
 }
 
 export function pickColor(x, y, invocation) {
-    const screenshot = new Shell.Screenshot();
+    // Use XDG Desktop Portal for color picking (like Contrast app does)
+    const portal = Gio.DBusProxy.new_for_bus_sync(
+        Gio.BusType.SESSION,
+        Gio.DBusProxyFlags.NONE,
+        null,
+        'org.freedesktop.portal.Desktop',
+        '/org/freedesktop/portal/desktop',
+        'org.freedesktop.portal.Screenshot',
+        null
+    );
 
-    screenshot.pick_color(x, y, (source, result) => {
-        try {
-            const color = screenshot.pick_color_finish(result);
-            invocation.return_value(GLib.Variant.new('(ddd)', [
-                color.red / 255.0,
-                color.green / 255.0,
-                color.blue / 255.0,
-            ]));
-        } catch (e) {
+    try {
+        // Call PickColor on the portal
+        // Parameters: (parent_window, options)
+        const options = {};
+        const result = portal.call_sync(
+            'PickColor',
+            new GLib.Variant('(sa{sv})', ['', options]),
+            Gio.DBusCallFlags.NONE,
+            -1,
+            null
+        );
+
+        // Parse response: returns (response_code, results)
+        // results contains 'color' key with (r, g, b) tuple
+        const [response_code, results] = result.deep_unpack();
+
+        if (response_code === 0) {
+            const color = results['color'].deep_unpack();
+            invocation.return_value(GLib.Variant.new('(ddd)', color));
+        } else {
             invocation.return_error_literal(
                 Gio.DBusError, Gio.DBusError.FAILED,
-                `ScreenshotFailed: ${e.message}`);
+                'ColorPick cancelled or failed');
         }
-    });
+    } catch (e) {
+        invocation.return_error_literal(
+            Gio.DBusError, Gio.DBusError.FAILED,
+            `ColorPickFailed: ${e.message}`);
+    }
 }
 
 export function cleanupScreenshots() {
