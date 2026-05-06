@@ -2,7 +2,9 @@ import Shell from 'gi://Shell';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 
-const SCREENSHOT_DIR = '/tmp/gnome-mcp';
+// Use ~/Pictures/Screenshots as the default location
+const PICTURES_DIR = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES);
+const SCREENSHOT_DIR = GLib.build_filenamev([PICTURES_DIR, 'Screenshots']);
 let _counter = 0;
 
 function _ensureDir() {
