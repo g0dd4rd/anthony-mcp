@@ -353,6 +353,8 @@ export class DbusService {
                 `${ERROR_DOMAIN}.WindowNotFound: No window with ID ${windowId}`);
             return;
         }
+        if (win.minimized) win.unminimize();
+        win.activate(global.get_current_time());
         const isMaximized = typeof win.get_maximized === 'function'
             ? win.get_maximized() !== 0
             : (win.maximized_horizontally || win.maximized_vertically || false);
@@ -394,6 +396,8 @@ export class DbusService {
                 `${ERROR_DOMAIN}.WindowNotFound: No window with ID ${windowId}`);
             return;
         }
+        if (win.minimized) win.unminimize();
+        win.activate(global.get_current_time());
         win.maximize(Meta.MaximizeFlags.BOTH);
         invocation.return_value(GLib.Variant.new('(b)', [true]));
     }
@@ -406,6 +410,8 @@ export class DbusService {
                 `${ERROR_DOMAIN}.WindowNotFound: No window with ID ${windowId}`);
             return;
         }
+        if (win.minimized) win.unminimize();
+        win.activate(global.get_current_time());
         win.unmaximize(Meta.MaximizeFlags.BOTH);
         invocation.return_value(GLib.Variant.new('(b)', [true]));
     }
