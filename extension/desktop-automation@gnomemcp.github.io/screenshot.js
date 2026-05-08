@@ -127,7 +127,8 @@ export function cleanupScreenshots() {
     let info;
     while ((info = enumerator.next_file(null)) !== null) {
         const child = dir.get_child(info.get_name());
-        if (child.delete(null))
+        // Move to trash instead of permanent deletion (GNOME standard behavior)
+        if (child.trash(null))
             count++;
     }
     return count;
