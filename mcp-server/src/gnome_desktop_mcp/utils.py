@@ -63,6 +63,10 @@ def friendly_to_clutter_name(key: str) -> str:
     """Translate a friendly key name to a Clutter key name."""
     if key in _KEY_NAME_MAP:
         return _KEY_NAME_MAP[key]
+    # Single letters must be lowercase — uppercase keyvals (e.g. "H"=72)
+    # implicitly include Shift, so "Ctrl+H" would become Ctrl+Shift+h.
+    if len(key) == 1 and key.isalpha():
+        return key.lower()
     return key
 
 
