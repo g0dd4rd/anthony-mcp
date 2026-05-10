@@ -1,106 +1,105 @@
-"""Key name mapping, base64 encoding, temp file cleanup."""
+"""Key name mapping, base64 encoding, temp file cleanup.
+
+Key translation follows dogtail's approach: explicit alias map for common
+names, then GDK validation with case fallbacks so we don't need to enumerate
+every possible key.
+"""
 
 import base64
 import os
 from pathlib import Path
 
-# Friendly name -> Clutter key name
+import gi
+gi.require_version('Gdk', '4.0')
+from gi.repository import Gdk
+
+# Friendly name -> Clutter/GDK key name.
+# Modifiers and keys whose GDK name differs from the friendly name.
+# Everything else is resolved via GDK validation in friendly_to_clutter_name().
 _KEY_NAME_MAP = {
+    # Modifiers
     "Ctrl": "Control_L",
+    "ctrl": "Control_L",
     "Control": "Control_L",
+    "control": "Control_L",
     "Shift": "Shift_L",
+    "shift": "Shift_L",
     "Alt": "Alt_L",
+    "alt": "Alt_L",
     "Super": "Super_L",
+    "super": "Super_L",
     "Win": "Super_L",
+    "win": "Super_L",
     "Meta": "Super_L",
-    "Tab": "Tab",
-    "Return": "Return",
+    "meta": "Super_L",
+    # Keys whose GDK name doesn't match the friendly name
     "Enter": "Return",
-    "Escape": "Escape",
+    "enter": "Return",
     "Esc": "Escape",
+    "esc": "Escape",
     "Backspace": "BackSpace",
-    "Delete": "Delete",
+    "backspace": "BackSpace",
     "Del": "Delete",
+    "del": "Delete",
+    "Ins": "Insert",
+    "ins": "Insert",
     "Space": "space",
-    "Up": "Up",
-    "Down": "Down",
-    "Left": "Left",
-    "Right": "Right",
-    "Plus": "plus",
-    "Minus": "minus",
-    "Home": "Home",
-    "End": "End",
-    "Page_Up": "Page_Up",
-    "Page_Down": "Page_Down",
-    "Question": "question",
-    "Comma": "comma",
+    " ": "space",
+    "PageUp": "Page_Up",
+    "pageup": "Page_Up",
+    "PageDown": "Page_Down",
+    "pagedown": "Page_Down",
 }
 
 # Add F1-F12
 for _i in range(1, 13):
     _KEY_NAME_MAP[f"F{_i}"] = f"F{_i}"
 
-# Clutter key name -> X11 keyval
-_KEYVAL_MAP = {
-    "Control_L": 65507,
-    "Control_R": 65508,
-    "Shift_L": 65505,
-    "Shift_R": 65506,
-    "Alt_L": 65513,
-    "Alt_R": 65514,
-    "Super_L": 65515,
-    "Super_R": 65516,
-    "Tab": 65289,
-    "Return": 65293,
-    "Escape": 65307,
-    "BackSpace": 65288,
-    "Delete": 65535,
-    "space": 32,
-    "Up": 65362,
-    "Down": 65364,
-    "Left": 65361,
-    "Right": 65363,
-}
 
-# Add F1-F12
-for _i in range(1, 13):
-    _KEYVAL_MAP[f"F{_i}"] = 65469 + _i
+def _gdk_valid(name: str) -> bool:
+    """Check if a key name is recognized by GDK."""
+    return Gdk.keyval_from_name(name) not in (0, 0xffffff)
 
 
 def friendly_to_clutter_name(key: str) -> str:
-    """Translate a friendly key name to a Clutter key name.
+    """Translate a friendly key name to a GDK key name.
 
-    Uses GDK validation with lowercase fallback (à la dogtail) so we don't
-    need to enumerate every possible key name in _KEY_NAME_MAP.
+    Follows dogtail's resolution chain:
+    1. Explicit alias map (modifiers, common renames)
+    2. Single letter → lowercase (avoids implicit Shift)
+    3. GDK validation: as-is → lowercase → Gdk.KEY_<name> attribute
     """
     if key in _KEY_NAME_MAP:
         return _KEY_NAME_MAP[key]
+    if key.lower() in _KEY_NAME_MAP:
+        return _KEY_NAME_MAP[key.lower()]
     # Single letters must be lowercase — uppercase keyvals (e.g. "H"=72)
     # implicitly include Shift, so "Ctrl+H" would become Ctrl+Shift+h.
     if len(key) == 1 and key.isalpha():
         return key.lower()
-    # GDK validation: try as-is, then lowercase (e.g. "Plus" → "plus")
-    try:
-        import gi
-        gi.require_version('Gdk', '4.0')
-        from gi.repository import Gdk
-        if Gdk.keyval_from_name(key) not in (0, 0xffffff):
-            return key
-        lower = key.lower()
-        if Gdk.keyval_from_name(lower) not in (0, 0xffffff):
-            return lower
-    except Exception:
-        pass
+    if _gdk_valid(key):
+        return key
+    lower = key.lower()
+    if _gdk_valid(lower):
+        return lower
+    # Capitalize for keys like "f4" → "F4", "ESCAPE" → "Escape"
+    capitalized = key.capitalize()
+    if _gdk_valid(capitalized):
+        return capitalized
+    # Last resort: try Gdk.KEY_<name> (handles things like "Dash", "Colon")
+    if hasattr(Gdk, f"KEY_{key}"):
+        return key
     return key
 
 
 def friendly_to_keyval(key: str) -> int:
     """Translate a friendly key name to an X11 keyval."""
-    clutter_name = friendly_to_clutter_name(key)
-    if clutter_name in _KEYVAL_MAP:
-        return _KEYVAL_MAP[clutter_name]
-    if len(clutter_name) == 1:
-        return ord(clutter_name)
+    gdk_name = friendly_to_clutter_name(key)
+    kv = Gdk.keyval_from_name(gdk_name)
+    if kv not in (0, 0xffffff):
+        return kv
+    if len(gdk_name) == 1:
+        return Gdk.unicode_to_keyval(ord(gdk_name))
     raise ValueError(f"Unknown key: {key}")
 
 
