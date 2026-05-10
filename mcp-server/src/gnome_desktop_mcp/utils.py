@@ -26,6 +26,14 @@ _KEY_NAME_MAP = {
     "Down": "Down",
     "Left": "Left",
     "Right": "Right",
+    "Plus": "plus",
+    "Minus": "minus",
+    "Home": "Home",
+    "End": "End",
+    "Page_Up": "Page_Up",
+    "Page_Down": "Page_Down",
+    "Question": "question",
+    "Comma": "comma",
 }
 
 # Add F1-F12
@@ -60,13 +68,29 @@ for _i in range(1, 13):
 
 
 def friendly_to_clutter_name(key: str) -> str:
-    """Translate a friendly key name to a Clutter key name."""
+    """Translate a friendly key name to a Clutter key name.
+
+    Uses GDK validation with lowercase fallback (à la dogtail) so we don't
+    need to enumerate every possible key name in _KEY_NAME_MAP.
+    """
     if key in _KEY_NAME_MAP:
         return _KEY_NAME_MAP[key]
     # Single letters must be lowercase — uppercase keyvals (e.g. "H"=72)
     # implicitly include Shift, so "Ctrl+H" would become Ctrl+Shift+h.
     if len(key) == 1 and key.isalpha():
         return key.lower()
+    # GDK validation: try as-is, then lowercase (e.g. "Plus" → "plus")
+    try:
+        import gi
+        gi.require_version('Gdk', '4.0')
+        from gi.repository import Gdk
+        if Gdk.keyval_from_name(key) not in (0, 0xffffff):
+            return key
+        lower = key.lower()
+        if Gdk.keyval_from_name(lower) not in (0, 0xffffff):
+            return lower
+    except Exception:
+        pass
     return key
 
 
