@@ -60,6 +60,11 @@ class AutomationIndicator extends PanelMenu.Button {
         this.menu.addMenuItem(disconnectItem);
 
         this._service.onActivity = this._onActivity.bind(this);
+        this._service.onEnabledChanged = (enabled) => {
+            this._toggleItem.setToggleState(enabled);
+            this._hasFlashed = false;
+            this._updateStatus();
+        };
     }
 
     _onActivity(_entry) {

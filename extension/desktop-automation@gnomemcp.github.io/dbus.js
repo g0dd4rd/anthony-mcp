@@ -218,12 +218,14 @@ export class DbusService {
         this._enabled = false;
         this._activityLog = [];
         this._onActivity = null;
+        this._onEnabledChanged = null;
     }
 
     get enabled() { return this._enabled; }
     set enabled(value) { this._enabled = value; }
     get activityLog() { return this._activityLog; }
     set onActivity(callback) { this._onActivity = callback; }
+    set onEnabledChanged(callback) { this._onEnabledChanged = callback; }
 
     _logActivity(methodName) {
         const entry = { method: methodName, timestamp: new Date().toISOString() };
@@ -262,6 +264,8 @@ export class DbusService {
     SetEnabledAsync([enabled], invocation) {
         this._logActivity('SetEnabled');
         this._enabled = enabled;
+        if (this._onEnabledChanged)
+            this._onEnabledChanged(enabled);
         invocation.return_value(GLib.Variant.new('(b)', [true]));
     }
 
