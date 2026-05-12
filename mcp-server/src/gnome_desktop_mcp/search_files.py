@@ -2,7 +2,17 @@
 
 import subprocess
 import json
+import os
 from urllib.parse import unquote
+
+_EXT_ALIASES = {
+    '.jpg': '.jpeg',
+    '.jpeg': '.jpg',
+    '.htm': '.html',
+    '.html': '.htm',
+    '.tif': '.tiff',
+    '.tiff': '.tif',
+}
 
 
 def search_files(query: str, file_type: str = "files", limit: int = 10) -> str:
@@ -58,6 +68,19 @@ def search_files(query: str, file_type: str = "files", limit: int = 10) -> str:
                 # Remove file:// prefix and decode URL encoding
                 path = unquote(line[7:])
                 paths.append(path)
+
+        if not paths:
+            _, ext = os.path.splitext(query)
+            alt_ext = _EXT_ALIASES.get(ext.lower())
+            if alt_ext:
+                alt_query = query[:len(query) - len(ext)] + alt_ext
+                alt_result = subprocess.run(
+                    ["localsearch", "search", type_flag, "--limit", str(limit), alt_query],
+                    capture_output=True, text=True, check=True
+                )
+                for line in alt_result.stdout.strip().split('\n'):
+                    if line.startswith('file://'):
+                        paths.append(unquote(line[7:]))
 
         return json.dumps({
             "query": query,
