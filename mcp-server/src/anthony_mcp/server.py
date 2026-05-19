@@ -771,6 +771,103 @@ def set_wallpaper(image_path: str) -> str:
         return _handle_error(e)
 
 
+# ── System control ──────────────────────────────────────────────────
+
+
+@mcp.tool()
+def get_battery_status() -> str:
+    """Get battery percentage, state, and time remaining.
+
+    Returns:
+        Status string with battery level, charge state, and remaining time.
+    """
+    try:
+        from . import system_control
+        return system_control.get_battery_status()
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool()
+def set_brightness(target: str = "screen", level: str = "50%") -> str:
+    """Set screen or keyboard backlight brightness.
+
+    Args:
+        target: "screen" for display brightness, "keyboard" for keyboard backlight.
+        level: Brightness level. Examples: "50%", "up", "down", "max", "min".
+
+    Returns:
+        Success message with resulting brightness.
+    """
+    try:
+        from . import system_control
+        return system_control.set_brightness(target, level)
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool()
+def get_power_profile() -> str:
+    """Get the current power profile (performance, balanced, or power-saver).
+
+    Returns:
+        Status message with current profile name.
+    """
+    try:
+        from . import system_control
+        return system_control.get_power_profile()
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool()
+def set_power_profile(profile: str) -> str:
+    """Set power profile.
+
+    Args:
+        profile: Power profile to set. Options: performance, balanced, power-saver.
+
+    Returns:
+        Success message.
+    """
+    try:
+        from . import system_control
+        return system_control.set_power_profile(profile)
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool()
+def lock_screen() -> str:
+    """Lock the screen.
+
+    Returns:
+        Success message.
+    """
+    try:
+        from . import system_control
+        return system_control.lock_screen()
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool()
+def power_action(action: str) -> str:
+    """Execute a power action.
+
+    Args:
+        action: Power action to perform. Options: suspend, restart, shutdown, logout.
+
+    Returns:
+        Confirmation message.
+    """
+    try:
+        from . import system_control
+        return system_control.power_action(action)
+    except Exception as e:
+        return _handle_error(e)
+
+
 def main():
     mcp.run(transport="stdio")
 
