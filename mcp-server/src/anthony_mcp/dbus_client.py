@@ -2,9 +2,9 @@
 
 import json
 
-IFACE = "io.github.gnomemcp.DesktopAutomation"
+IFACE = "io.github.anthonymcp.DesktopAutomation"
 BUS_NAME = "org.gnome.Shell"
-OBJECT_PATH = "/io/github/gnomemcp/DesktopAutomation"
+OBJECT_PATH = "/io/github/anthonymcp/DesktopAutomation"
 
 
 class AutomationDisabledError(Exception):
@@ -62,7 +62,7 @@ class DbusClient:
         except Exception as e:
             raise ExtensionNotFoundError(
                 "GNOME Shell extension not installed or not enabled. "
-                "Install desktop-automation@gnomemcp.github.io and restart GNOME Shell."
+                "Install desktop-automation@anthonymcp.github.io and restart GNOME Shell."
             ) from e
 
     def _call(self, method: str, *args):

@@ -9,7 +9,7 @@ import * as Volume from './volume.js';
 
 const INTERFACE_XML = `
 <node>
-  <interface name="io.github.gnomemcp.DesktopAutomation">
+  <interface name="io.github.anthonymcp.DesktopAutomation">
 
     <!-- Screenshots -->
     <method name="Screenshot">
@@ -187,7 +187,7 @@ const INTERFACE_XML = `
 </node>
 `;
 
-const ERROR_DOMAIN = 'io.github.gnomemcp.DesktopAutomation.Error';
+const ERROR_DOMAIN = 'io.github.anthonymcp.DesktopAutomation.Error';
 
 function _formatAppName(wmClass) {
     if (!wmClass)

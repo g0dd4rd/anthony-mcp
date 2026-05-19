@@ -1,5 +1,5 @@
-# gnome-desktop-mcp
+# anthony-mcp
 
 MCP server for GNOME desktop automation via D-Bus.
 
-<!-- mcp-name: io.github.sbuysse/gnome-desktop-mcp -->
+<!-- mcp-name: io.github.g0dd4rd/anthony-mcp -->

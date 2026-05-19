@@ -5,7 +5,7 @@ import { DbusService, INTERFACE_XML } from './dbus.js';
 import { AutomationIndicator } from './indicator.js';
 import { showConsentDialog } from './consent.js';
 
-const OBJECT_PATH = '/io/github/gnomemcp/DesktopAutomation';
+const OBJECT_PATH = '/io/github/anthonymcp/DesktopAutomation';
 
 export default class DesktopAutomationExtension extends Extension {
     enable() {

@@ -1,9 +1,9 @@
 {
-  "uuid": "desktop-automation@gnomemcp.github.io",
+  "uuid": "desktop-automation@anthonymcp.github.io",
   "name": "Desktop Automation",
   "description": "Exposes D-Bus API for desktop automation (screenshots, window management, input injection). Designed for use with MCP-compatible AI assistants.",
   "shell-version": ["45", "46", "47", "48", "49", "50"],
   "version": 1,
-  "url": "https://github.com/sbuysse/gnome-desktop-mcp",
+  "url": "https://github.com/g0dd4rd/anthony-mcp",
   "session-modes": ["user"]
 }

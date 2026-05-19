@@ -1,12 +1,14 @@
-# Gnome-MCP
+# Anthony MCP
 
 Desktop automation for GNOME Wayland via MCP. Take screenshots, manage windows, and inject keyboard/mouse input from AI assistants like Claude Code.
 
-[![GNOME Desktop MCP server](https://glama.ai/mcp/servers/sbuysse/gnome-desktop-mcp/badges/card.svg)](https://glama.ai/mcp/servers/sbuysse/gnome-desktop-mcp)
+```
+Anthony  ──MCP──>  anthony-mcp (Python)  ──D-Bus──>  GNOME Shell Extension
+```
 
-```
-Claude Code  ──MCP──▶  gnome-desktop-mcp (Python)  ──D-Bus──▶  GNOME Shell Extension
-```
+## Credits
+
+This project is a fork of [gnome-desktop-mcp](https://github.com/sbuysse/gnome-mcp) by sbuysse, which was inspired by [gnome-mcp-server](https://github.com/bilelmoussaoui/gnome-mcp-server) by Bilal Elmoussaoui.
 
 ## Why
 
@@ -14,14 +16,14 @@ GNOME Wayland blocks external processes from taking screenshots or injecting inp
 
 ## Features
 
-- **30 MCP tools**: screenshots, window management, input injection, workspace control
+- **30+ MCP tools**: screenshots, window management, input injection, workspace control, volume, media, notifications, file/URL opening, search
 - **Privacy indicator**: top bar icon shows connection status (red = active, grey = idle)
 - **Consent dialog**: first-use confirmation before enabling automation
 - **Access gating**: master kill switch to disable all automation instantly
 
 ## Requirements
 
-- GNOME Shell 45-49 (Wayland)
+- GNOME Shell 45-50 (Wayland)
 - Python 3.12+
 
 ## Installation
@@ -29,21 +31,21 @@ GNOME Wayland blocks external processes from taking screenshots or injecting inp
 ### Quick install (development)
 
 ```bash
-git clone https://github.com/sbuysse/gnome-mcp.git
-cd gnome-mcp
+git clone https://github.com/g0dd4rd/anthony-mcp.git
+cd anthony-mcp
 ./install.sh
 ```
 
 Then log out and back in (required for Wayland), and enable:
 
 ```bash
-gnome-extensions enable desktop-automation@gnomemcp.github.io
+gnome-extensions enable desktop-automation@anthonymcp.github.io
 ```
 
-### MCP server only (from PyPI)
+### MCP server only
 
 ```bash
-pip install gnome-desktop-mcp
+pip install -e mcp-server
 ```
 
 ## Claude Code Configuration
@@ -54,7 +56,7 @@ Add to `~/.claude/settings.json`:
 {
   "mcpServers": {
     "desktop-automation": {
-      "command": "gnome-desktop-mcp"
+      "command": "anthony-mcp"
     }
   }
 }
@@ -93,12 +95,32 @@ Add to `~/.claude/settings.json`:
 | `key_press` | Press a single key ("Return", "F5", "a") |
 | `key_combo` | Key combination ("Ctrl+Alt+t") |
 | `type_text` | Type text character by character |
+| `gnome_search` | Open GNOME search and activate top result |
 | `mouse_move` | Move mouse to coordinates |
 | `mouse_click` | Click at coordinates |
 | `mouse_double_click` | Double-click |
 | `mouse_down` / `mouse_up` | Press/release mouse button |
 | `mouse_drag` | Drag from point A to point B |
 | `mouse_scroll` | Scroll at coordinates |
+
+### Audio & Media
+
+| Tool | Description |
+|---|---|
+| `get_volume` / `set_volume` | Get/set system volume |
+| `mute_volume` | Mute/unmute |
+| `media_control` | Play, pause, next, previous, stop |
+| `get_media_status` | Current track and player status |
+
+### Files & Apps
+
+| Tool | Description |
+|---|---|
+| `open_file` | Open files by path or search for them |
+| `open_url` | Open URL in default browser |
+| `search_files` | Search files via GNOME Tracker |
+| `set_wallpaper` | Set desktop wallpaper |
+| `quick_settings` | Toggle WiFi, Bluetooth, Dark Mode, etc. |
 
 ### Utility
 
@@ -107,6 +129,7 @@ Add to `~/.claude/settings.json`:
 | `ping` | Check extension is alive |
 | `get_enabled` / `set_enabled` | Check/toggle automation |
 | `get_monitors` | List monitors with geometry |
+| `send_notification` | Send desktop notification (immediate or delayed) |
 
 ## Privacy
 
@@ -114,17 +137,16 @@ Add to `~/.claude/settings.json`:
 - **Toggle switch** to disable all automation instantly
 - **Activity log** tracks last 20 method calls (name + timestamp only, no data)
 - **D-Bus access gating**: all methods blocked when disabled
-- **Session bus trust model**: any local user process can call the API (consistent with GNOME's security model)
 
 ## Architecture
 
-The GNOME Shell extension (`desktop-automation@gnomemcp.github.io`) runs inside the Wayland compositor. It exports `io.github.gnomemcp.DesktopAutomation` on the session D-Bus with privileged access to:
+The GNOME Shell extension (`desktop-automation@anthonymcp.github.io`) runs inside the Wayland compositor. It exports `io.github.anthonymcp.DesktopAutomation` on the session D-Bus with privileged access to:
 
 - `Shell.Screenshot` — silent screenshots (no permission dialog)
 - `Meta.Window` — window management
 - `Clutter.VirtualInputDevice` — keyboard/mouse injection
 
-The Python MCP server (`gnome-desktop-mcp`) translates MCP tool calls into D-Bus method calls via `dasbus`.
+The Python MCP server (`anthony-mcp`) translates MCP tool calls into D-Bus method calls via `dasbus`.
 
 ## Development
 
@@ -140,8 +162,8 @@ journalctl /usr/bin/gnome-shell -f
 
 # Test D-Bus directly
 gdbus call --session --dest org.gnome.Shell \
-  --object-path /io/github/gnomemcp/DesktopAutomation \
-  --method io.github.gnomemcp.DesktopAutomation.Ping
+  --object-path /io/github/anthonymcp/DesktopAutomation \
+  --method io.github.anthonymcp.DesktopAutomation.Ping
 ```
 
 ## License

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-EXTENSION_UUID="desktop-automation@gnomemcp.github.io"
+EXTENSION_UUID="desktop-automation@anthonymcp.github.io"
 EXTENSION_DIR="$HOME/.local/share/gnome-shell/extensions/$EXTENSION_UUID"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
@@ -33,5 +33,5 @@ echo "1. Restart GNOME Shell (log out/in on Wayland)"
 echo "2. Enable the extension: gnome-extensions enable $EXTENSION_UUID"
 echo "3. Add to Claude Code config:"
 echo '   "desktop-automation": {'
-echo '     "command": "gnome-desktop-mcp"'
+echo '     "command": "anthony-mcp"'
 echo '   }'

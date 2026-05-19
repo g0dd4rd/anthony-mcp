@@ -1,4 +1,4 @@
-from gnome_desktop_mcp.utils import friendly_to_clutter_name, friendly_to_keyval, translate_combo
+from anthony_mcp.utils import friendly_to_clutter_name, friendly_to_keyval, translate_combo
 
 
 def test_ctrl_maps_to_control_l():

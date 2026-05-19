@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, patch
 import pytest
-from gnome_desktop_mcp.dbus_client import (
+from anthony_mcp.dbus_client import (
     DbusClient, AutomationDisabledError, ExtensionNotFoundError,
     WindowNotFoundError, _translate_error,
 )
@@ -40,7 +40,7 @@ def test_screenshot(mock_proxy):
 
 
 def test_error_disabled():
-    err = DBusError("io.github.gnomemcp.DesktopAutomation.Error.Disabled: Automation is disabled")
+    err = DBusError("io.github.anthonymcp.DesktopAutomation.Error.Disabled: Automation is disabled")
     result = _translate_error(err)
     assert isinstance(result, AutomationDisabledError)
 

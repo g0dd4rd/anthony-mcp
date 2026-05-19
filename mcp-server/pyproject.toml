@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "gnome-desktop-mcp"
+name = "anthony-mcp"
 version = "0.1.0"
 description = "MCP server for GNOME desktop automation via D-Bus"
 readme = "README.md"
@@ -33,10 +33,10 @@ dev = [
 ]
 
 [project.scripts]
-gnome-desktop-mcp = "gnome_desktop_mcp.server:main"
+anthony-mcp = "anthony_mcp.server:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/gnome_desktop_mcp"]
+packages = ["src/anthony_mcp"]
 
 [tool.pytest.ini_options]
 testpaths = ["../tests"]
