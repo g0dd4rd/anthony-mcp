@@ -8,7 +8,7 @@ Anthony  ──MCP──>  anthony-mcp (Python)  ──D-Bus──>  GNOME Shell
 
 ## Credits
 
-This project is a fork of [gnome-desktop-mcp](https://github.com/sbuysse/gnome-mcp) by sbuysse, which was inspired by [gnome-mcp-server](https://github.com/bilelmoussaoui/gnome-mcp-server) by Bilal Elmoussaoui.
+This project is a fork of [gnome-desktop-mcp](https://github.com/sbuysse/gnome-desktop-mcp) by sbuysse, which was inspired by [gnome-mcp-server](https://github.com/bilelmoussaoui/gnome-mcp-server) by Bilal Elmoussaoui.
 
 ## Why
 
