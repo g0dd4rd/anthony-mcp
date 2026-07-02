@@ -193,6 +193,9 @@ class DbusClient:
     def activate_workspace(self, index: int) -> bool:
         return self._call("ActivateWorkspace", index)
 
+    def move_window_to_workspace(self, window_id: int, workspace_index: int) -> bool:
+        return self._call("MoveWindowToWorkspace", window_id, workspace_index)
+
     # --- Input ---
 
     def key_press(self, keyval: int) -> bool:
