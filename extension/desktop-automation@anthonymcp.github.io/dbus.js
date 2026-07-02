@@ -85,6 +85,11 @@ const INTERFACE_XML = `
       <arg type="i" direction="in" name="index"/>
       <arg type="b" direction="out" name="success"/>
     </method>
+    <method name="MoveWindowToWorkspace">
+      <arg type="u" direction="in" name="windowId"/>
+      <arg type="i" direction="in" name="workspaceIndex"/>
+      <arg type="b" direction="out" name="success"/>
+    </method>
 
     <!-- Input -->
     <method name="KeyPress">
@@ -447,6 +452,19 @@ export class DbusService {
         if (!success) {
             invocation.return_error_literal(Gio.DBusError, Gio.DBusError.FAILED,
                 'Invalid workspace index');
+            return;
+        }
+        invocation.return_value(GLib.Variant.new('(b)', [true]));
+    }
+
+    MoveWindowToWorkspaceAsync([windowId, workspaceIndex], invocation) {
+        if (!this._checkEnabled(invocation, 'MoveWindowToWorkspace')) return;
+        const result = Windows.moveWindowToWorkspace(windowId, workspaceIndex);
+        if (!result.success) {
+            const msg = result.error === 'window_not_found'
+                ? `${ERROR_DOMAIN}.WindowNotFound: No window with ID ${windowId}`
+                : `${ERROR_DOMAIN}.InvalidWorkspace: Invalid workspace index ${workspaceIndex}`;
+            invocation.return_error_literal(Gio.DBusError, Gio.DBusError.FAILED, msg);
             return;
         }
         invocation.return_value(GLib.Variant.new('(b)', [true]));

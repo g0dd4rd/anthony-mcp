@@ -278,6 +278,17 @@ def activate_workspace(index: int) -> str:
         return _handle_error(e)
 
 
+@mcp.tool()
+def move_window_to_workspace(window_id: int, workspace_index: int) -> str:
+    """Move a window to a different workspace by index (0-based)."""
+    try:
+        client = _get_client()
+        client.move_window_to_workspace(window_id, workspace_index)
+        return f"Moved window to workspace {workspace_index}"
+    except Exception as e:
+        return _handle_error(e)
+
+
 # --- Input Tools ---
 
 

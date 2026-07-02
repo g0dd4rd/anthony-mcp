@@ -90,3 +90,14 @@ export function activateWorkspace(index) {
     ws.activate(global.get_current_time());
     return true;
 }
+
+export function moveWindowToWorkspace(windowId, workspaceIndex) {
+    const win = findWindow(windowId);
+    if (!win)
+        return { success: false, error: 'window_not_found' };
+    const manager = global.workspace_manager;
+    if (workspaceIndex < 0 || workspaceIndex >= manager.get_n_workspaces())
+        return { success: false, error: 'invalid_workspace' };
+    win.change_workspace_by_index(workspaceIndex, false);
+    return { success: true };
+}
