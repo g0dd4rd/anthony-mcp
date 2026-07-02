@@ -1,8 +1,13 @@
-"""Quick Settings control for GNOME."""
+"""Quick Settings control for GNOME and KDE."""
 
+import os
 import subprocess
 
 import dbus
+
+
+def _is_kde():
+    return "KDE" in os.environ.get("XDG_CURRENT_DESKTOP", "").upper()
 
 
 def toggle_wifi(enabled: bool) -> str:
@@ -54,30 +59,62 @@ def toggle_bluetooth(enabled: bool) -> str:
 
 
 def toggle_night_light(enabled: bool) -> str:
-    """Enable or disable Night Light using gsettings.
+    """Enable or disable Night Light / Night Color.
 
     Args:
-        enabled: True to enable Night Light, False to disable
+        enabled: True to enable, False to disable
 
     Returns:
         Success message string
 
     Raises:
-        Exception: If gsettings command fails
+        Exception: If the command fails
     """
     try:
-        value = "true" if enabled else "false"
-        subprocess.run(
-            [
-                "gsettings",
-                "set",
-                "org.gnome.settings-daemon.plugins.color",
-                "night-light-enabled",
-                value,
-            ],
-            check=True,
-            capture_output=True,
-        )
+        if _is_kde():
+            value = "true" if enabled else "false"
+            subprocess.run(
+                [
+                    "kwriteconfig6",
+                    "--file",
+                    "kwinrc",
+                    "--group",
+                    "NightColor",
+                    "--key",
+                    "Active",
+                    value,
+                ],
+                check=True,
+                capture_output=True,
+            )
+            subprocess.run(
+                [
+                    "gdbus",
+                    "call",
+                    "--session",
+                    "--dest",
+                    "org.kde.KWin",
+                    "--object-path",
+                    "/org/kde/KWin",
+                    "--method",
+                    "org.kde.KWin.reconfigure",
+                ],
+                capture_output=True,
+                text=True,
+            )
+        else:
+            value = "true" if enabled else "false"
+            subprocess.run(
+                [
+                    "gsettings",
+                    "set",
+                    "org.gnome.settings-daemon.plugins.color",
+                    "night-light-enabled",
+                    value,
+                ],
+                check=True,
+                capture_output=True,
+            )
 
         return f"Night Light {'enabled' if enabled else 'disabled'}"
     except subprocess.CalledProcessError as e:
@@ -85,7 +122,7 @@ def toggle_night_light(enabled: bool) -> str:
 
 
 def toggle_dark_style(enabled: bool) -> str:
-    """Enable or disable Dark Style using gsettings.
+    """Enable or disable dark mode.
 
     Args:
         enabled: True to enable dark mode, False for light mode
@@ -94,15 +131,23 @@ def toggle_dark_style(enabled: bool) -> str:
         Success message string
 
     Raises:
-        Exception: If gsettings command fails
+        Exception: If the command fails
     """
     try:
-        value = "prefer-dark" if enabled else "prefer-light"
-        subprocess.run(
-            ["gsettings", "set", "org.gnome.desktop.interface", "color-scheme", value],
-            check=True,
-            capture_output=True,
-        )
+        if _is_kde():
+            scheme = "BreezeDark" if enabled else "BreezeLight"
+            subprocess.run(
+                ["plasma-apply-colorscheme", scheme],
+                check=True,
+                capture_output=True,
+            )
+        else:
+            value = "prefer-dark" if enabled else "prefer-light"
+            subprocess.run(
+                ["gsettings", "set", "org.gnome.desktop.interface", "color-scheme", value],
+                check=True,
+                capture_output=True,
+            )
 
         return f"Dark style {'enabled' if enabled else 'disabled'}"
     except subprocess.CalledProcessError as e:
@@ -110,9 +155,7 @@ def toggle_dark_style(enabled: bool) -> str:
 
 
 def toggle_do_not_disturb(enabled: bool) -> str:
-    """Enable or disable Do Not Disturb using gsettings.
-
-    Note: show-banners logic is inverted (false = DND enabled)
+    """Enable or disable Do Not Disturb.
 
     Args:
         enabled: True to enable DND, False to disable
@@ -121,16 +164,33 @@ def toggle_do_not_disturb(enabled: bool) -> str:
         Success message string
 
     Raises:
-        Exception: If gsettings command fails
+        Exception: If the command fails
     """
     try:
-        # Inverted: show-banners=false means DND is enabled
-        value = "false" if enabled else "true"
-        subprocess.run(
-            ["gsettings", "set", "org.gnome.desktop.notifications", "show-banners", value],
-            check=True,
-            capture_output=True,
-        )
+        if _is_kde():
+            value = "true" if enabled else "false"
+            subprocess.run(
+                [
+                    "kwriteconfig6",
+                    "--file",
+                    "plasmanotifyrc",
+                    "--group",
+                    "DoNotDisturb",
+                    "--key",
+                    "WhenScreensMirrored",
+                    value,
+                ],
+                check=True,
+                capture_output=True,
+            )
+        else:
+            # Inverted: show-banners=false means DND is enabled
+            value = "false" if enabled else "true"
+            subprocess.run(
+                ["gsettings", "set", "org.gnome.desktop.notifications", "show-banners", value],
+                check=True,
+                capture_output=True,
+            )
 
         return f"Do Not Disturb {'enabled' if enabled else 'disabled'}"
     except subprocess.CalledProcessError as e:
@@ -138,7 +198,7 @@ def toggle_do_not_disturb(enabled: bool) -> str:
 
 
 def quick_settings(setting: str, enabled: bool) -> str:
-    """Toggle GNOME quick settings.
+    """Toggle desktop quick settings.
 
     Args:
         setting: Which setting to toggle. Options: wifi, bluetooth, night_light,

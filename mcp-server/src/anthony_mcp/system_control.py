@@ -1,7 +1,12 @@
 """System control: battery, brightness, power profile, lock screen, power actions."""
 
+import os
 import re
 import subprocess
+
+
+def _is_kde():
+    return "KDE" in os.environ.get("XDG_CURRENT_DESKTOP", "").upper()
 
 
 def get_battery_status() -> str:
@@ -219,11 +224,16 @@ def power_action(action: str) -> str:
         ValueError: If the action is not recognized.
         RuntimeError: If the command fails.
     """
+    if _is_kde():
+        session_id = os.environ.get("XDG_SESSION_ID", "")
+        logout_cmd = ["loginctl", "terminate-session", session_id]
+    else:
+        logout_cmd = ["gnome-session-quit", "--logout", "--no-prompt"]
     commands = {
         "suspend": (["systemctl", "suspend"], "Suspending."),
         "restart": (["systemctl", "reboot"], "Restarting."),
         "shutdown": (["systemctl", "poweroff"], "Shutting down."),
-        "logout": (["gnome-session-quit", "--logout", "--no-prompt"], "Logging out."),
+        "logout": (logout_cmd, "Logging out."),
     }
     entry = commands.get(action)
     if not entry:

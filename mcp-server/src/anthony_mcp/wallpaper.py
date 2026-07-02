@@ -7,6 +7,10 @@ from pathlib import Path
 from . import wallpaper_index
 
 
+def _is_kde():
+    return "KDE" in os.environ.get("XDG_CURRENT_DESKTOP", "").upper()
+
+
 def set_wallpaper(image_path: str) -> str:
     """Set the desktop wallpaper.
 
@@ -150,22 +154,26 @@ def _set_wallpaper_from_path(image_path: str) -> str:
             " Supported: JPG, JPEG, PNG, SVG, BMP, GIF, WEBP, JXL"
         )
 
-    # Convert to file:// URI
-    image_uri = f"file://{path}"
-
-    # Set wallpaper for both light and dark mode
-    subprocess.run(
-        ["gsettings", "set", "org.gnome.desktop.background", "picture-uri", image_uri],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-
-    subprocess.run(
-        ["gsettings", "set", "org.gnome.desktop.background", "picture-uri-dark", image_uri],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    if _is_kde():
+        subprocess.run(
+            ["plasma-apply-wallpaperimage", str(path)],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    else:
+        image_uri = f"file://{path}"
+        subprocess.run(
+            ["gsettings", "set", "org.gnome.desktop.background", "picture-uri", image_uri],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        subprocess.run(
+            ["gsettings", "set", "org.gnome.desktop.background", "picture-uri-dark", image_uri],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
 
     return f"Wallpaper set to: {path.name}"

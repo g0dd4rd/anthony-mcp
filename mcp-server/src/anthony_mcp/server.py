@@ -1,34 +1,42 @@
-"""MCP server for GNOME desktop automation."""
+"""MCP server for desktop automation (GNOME and KDE)."""
 
 import json
+import os
 import re
 import threading
 import time
 
 from mcp.server.fastmcp import FastMCP
 
-from anthony_mcp.dbus_client import (
+from anthony_mcp.exceptions import (
     AutomationDisabledError,
-    DbusClient,
     ExtensionNotFoundError,
     InputFailedError,
     ScreenshotFailedError,
     WindowNotFoundError,
 )
-from anthony_mcp.utils import cleanup_file, file_to_base64, friendly_to_keyval, translate_combo
+from anthony_mcp.utils import cleanup_file, file_to_base64
 
 mcp = FastMCP(
-    "gnome-desktop-automation",
-    instructions="GNOME desktop automation: screenshots, window management, input injection",
+    "desktop-automation",
+    instructions="Desktop automation: screenshots, window management, input injection",
 )
 
-_client: DbusClient | None = None
+_client = None
 
 
-def _get_client() -> DbusClient:
+def _get_client():
     global _client
     if _client is None:
-        _client = DbusClient()
+        desktop = os.environ.get("XDG_CURRENT_DESKTOP", "").upper()
+        if "KDE" in desktop:
+            from anthony_mcp.kde_client import KdeClient
+
+            _client = KdeClient()
+        else:
+            from anthony_mcp.dbus_client import DbusClient
+
+            _client = DbusClient()
     return _client
 
 
@@ -71,7 +79,7 @@ def screenshot(include_cursor: bool = False, format: str = "path") -> str:
 
 @mcp.tool()
 def screenshot_window(
-    window_id: int, include_frame: bool = True, include_cursor: bool = False, format: str = "path"
+    window_id: str, include_frame: bool = True, include_cursor: bool = False, format: str = "path"
 ) -> str:
     """Take a screenshot of a specific window.
 
@@ -155,7 +163,7 @@ def list_windows() -> str:
 
 
 @mcp.tool()
-def get_window(window_id: int) -> str:
+def get_window(window_id: str) -> str:
     """Get detailed properties of a specific window.
 
     Args:
@@ -169,7 +177,7 @@ def get_window(window_id: int) -> str:
 
 
 @mcp.tool()
-def focus_window(window_id: int) -> str:
+def focus_window(window_id: str) -> str:
     """Focus and raise a window.
 
     Args:
@@ -184,7 +192,7 @@ def focus_window(window_id: int) -> str:
 
 
 @mcp.tool()
-def move_resize_window(window_id: int, x: int, y: int, width: int, height: int) -> str:
+def move_resize_window(window_id: str, x: int, y: int, width: int, height: int) -> str:
     """Move and resize a window. Unmaximizes first if needed.
 
     Args:
@@ -203,7 +211,7 @@ def move_resize_window(window_id: int, x: int, y: int, width: int, height: int) 
 
 
 @mcp.tool()
-def minimize_window(window_id: int) -> str:
+def minimize_window(window_id: str) -> str:
     """Minimize a window."""
     try:
         client = _get_client()
@@ -214,7 +222,7 @@ def minimize_window(window_id: int) -> str:
 
 
 @mcp.tool()
-def unminimize_window(window_id: int) -> str:
+def unminimize_window(window_id: str) -> str:
     """Unminimize (restore) a window."""
     try:
         client = _get_client()
@@ -225,7 +233,7 @@ def unminimize_window(window_id: int) -> str:
 
 
 @mcp.tool()
-def maximize_window(window_id: int) -> str:
+def maximize_window(window_id: str) -> str:
     """Maximize a window."""
     try:
         client = _get_client()
@@ -236,7 +244,7 @@ def maximize_window(window_id: int) -> str:
 
 
 @mcp.tool()
-def unmaximize_window(window_id: int) -> str:
+def unmaximize_window(window_id: str) -> str:
     """Unmaximize a window."""
     try:
         client = _get_client()
@@ -247,7 +255,7 @@ def unmaximize_window(window_id: int) -> str:
 
 
 @mcp.tool()
-def close_window(window_id: int) -> str:
+def close_window(window_id: str) -> str:
     """Close a window."""
     try:
         client = _get_client()
@@ -279,7 +287,7 @@ def activate_workspace(index: int) -> str:
 
 
 @mcp.tool()
-def move_window_to_workspace(window_id: int, workspace_index: int) -> str:
+def move_window_to_workspace(window_id: str, workspace_index: int) -> str:
     """Move a window to a different workspace by index (0-based)."""
     try:
         client = _get_client()
@@ -301,8 +309,7 @@ def key_press(key: str) -> str:
     """
     try:
         client = _get_client()
-        keyval = friendly_to_keyval(key)
-        client.key_press(keyval)
+        client.key_press(key)
         return f"Key pressed: {key}"
     except Exception as e:
         return _handle_error(e)
@@ -317,8 +324,7 @@ def key_combo(keys: str) -> str:
     """
     try:
         client = _get_client()
-        combo = translate_combo(keys)
-        client.key_combo(combo)
+        client.key_combo(keys)
         return f"Key combo pressed: {keys}"
     except Exception as e:
         return _handle_error(e)
@@ -341,13 +347,13 @@ def type_text(text: str) -> str:
 
 @mcp.tool()
 def gnome_search(query: str) -> str:
-    """Use GNOME search to find and open apps, files, or settings.
+    """Use desktop search to find and open apps, files, or settings.
 
-    Opens GNOME's Activities search overlay, types the query, and presses Enter.
-    GNOME will automatically find and open the best match.
+    Opens the desktop search overlay (GNOME Activities / KDE KRunner),
+    types the query, and presses Enter to activate the top result.
 
     Args:
-        query: Just the app name, file name, or domain name. GNOME search handles fuzzy matching.
+        query: Just the app name, file name, or domain name. Search handles fuzzy matching.
 
     Examples:
         - Launch apps: "firefox", "text editor", "calculator"
@@ -359,20 +365,15 @@ def gnome_search(query: str) -> str:
     try:
         client = _get_client()
 
-        # Press Super key to open Activities search
-        combo = translate_combo("Super")
-        client.key_combo(combo)
-        time.sleep(0.3)  # Wait for search overlay to appear
+        client.key_combo("Super")
+        time.sleep(0.3)
 
-        # Type the search query
         client.type_text(query)
-        time.sleep(0.2)  # Wait for search results
+        time.sleep(0.2)
 
-        # Press Return to activate the top result
-        return_key = friendly_to_keyval("Return")
-        client.key_press(return_key)
+        client.key_press("Return")
 
-        return f"GNOME search: '{query}'"
+        return f"Desktop search: '{query}'"
     except Exception as e:
         return _handle_error(e)
 
@@ -698,7 +699,7 @@ def get_media_status(player: str = "") -> str:
 
 @mcp.tool()
 def quick_settings(setting: str, enabled: bool) -> str:
-    """Toggle GNOME quick settings (WiFi, Bluetooth, Dark Mode, Night Light, Do Not Disturb).
+    """Toggle desktop quick settings (WiFi, Bluetooth, Dark Mode, Night Light, Do Not Disturb).
 
     Args:
         setting: Which setting to toggle.

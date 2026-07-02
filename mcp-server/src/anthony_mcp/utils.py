@@ -9,10 +9,16 @@ import base64
 import os
 from pathlib import Path
 
-import gi
+try:
+    import gi
 
-gi.require_version("Gdk", "4.0")
-from gi.repository import Gdk  # noqa: E402
+    gi.require_version("Gdk", "4.0")
+    from gi.repository import Gdk  # noqa: E402
+
+    _HAS_GDK = True
+except (ImportError, ValueError):
+    Gdk = None
+    _HAS_GDK = False
 
 # Friendly name -> Clutter/GDK key name.
 # Modifiers and keys whose GDK name differs from the friendly name.
@@ -59,6 +65,8 @@ for _i in range(1, 13):
 
 def _gdk_valid(name: str) -> bool:
     """Check if a key name is recognized by GDK."""
+    if not _HAS_GDK:
+        return False
     return Gdk.keyval_from_name(name) not in (0, 0xFFFFFF)
 
 
@@ -88,13 +96,15 @@ def friendly_to_clutter_name(key: str) -> str:
     if _gdk_valid(capitalized):
         return capitalized
     # Last resort: try Gdk.KEY_<name> (handles things like "Dash", "Colon")
-    if hasattr(Gdk, f"KEY_{key}"):
+    if _HAS_GDK and hasattr(Gdk, f"KEY_{key}"):
         return key
     return key
 
 
 def friendly_to_keyval(key: str) -> int:
-    """Translate a friendly key name to an X11 keyval."""
+    """Translate a friendly key name to an X11 keyval. Requires GDK (GNOME)."""
+    if not _HAS_GDK:
+        raise RuntimeError("GDK not available — key translation requires GTK on GNOME")
     gdk_name = friendly_to_clutter_name(key)
     kv = Gdk.keyval_from_name(gdk_name)
     if kv not in (0, 0xFFFFFF):
