@@ -7,6 +7,9 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo "=== Installing Desktop Automation Extension ==="
 
+# Ensure extensions directory exists
+mkdir -p "$(dirname "$EXTENSION_DIR")"
+
 # Symlink extension
 if [ -L "$EXTENSION_DIR" ]; then
     rm "$EXTENSION_DIR"
