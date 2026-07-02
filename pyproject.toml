@@ -1,0 +1,16 @@
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "S", "B", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+"*.py" = ["S603", "S607", "S110", "E722", "S108"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true

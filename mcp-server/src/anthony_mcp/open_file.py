@@ -1,8 +1,9 @@
 """Open files with default applications."""
 
-import subprocess
-import os
 import json
+import os
+import subprocess
+
 from . import search_files as sf
 
 
@@ -27,7 +28,7 @@ def open_file(path: str, search_location: str = "") -> str:
     """
     try:
         # Check if it's a full path (starts with / or ~)
-        if path.startswith('/') or path.startswith('~'):
+        if path.startswith("/") or path.startswith("~"):
             # Full path - open directly
             expanded_path = os.path.expanduser(path)
 
@@ -40,7 +41,7 @@ def open_file(path: str, search_location: str = "") -> str:
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 stdin=subprocess.DEVNULL,
-                start_new_session=True
+                start_new_session=True,
             )
 
             filename = os.path.basename(expanded_path)
@@ -59,7 +60,7 @@ def open_file(path: str, search_location: str = "") -> str:
                 "downloads": "~/Downloads",
                 "music": "~/Music",
                 "videos": "~/Videos",
-                "desktop": "~/Desktop"
+                "desktop": "~/Desktop",
             }
 
             search_filter = None
@@ -90,11 +91,11 @@ def open_file(path: str, search_location: str = "") -> str:
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 stdin=subprocess.DEVNULL,
-                start_new_session=True
+                start_new_session=True,
             )
 
             filename = os.path.basename(file_path)
             return f"Opened: {filename} (found at {file_path})"
 
     except Exception as e:
-        raise Exception(f"Failed to open '{path}': {e}")
+        raise Exception(f"Failed to open '{path}': {e}") from e

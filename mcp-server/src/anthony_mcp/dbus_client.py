@@ -9,26 +9,31 @@ OBJECT_PATH = "/io/github/anthonymcp/DesktopAutomation"
 
 class AutomationDisabledError(Exception):
     """Raised when automation is disabled by user."""
+
     pass
 
 
 class ExtensionNotFoundError(Exception):
     """Raised when the extension is not installed or enabled."""
+
     pass
 
 
 class WindowNotFoundError(Exception):
     """Raised when a window ID is invalid."""
+
     pass
 
 
 class ScreenshotFailedError(Exception):
     """Raised when a screenshot operation fails."""
+
     pass
 
 
 class InputFailedError(Exception):
     """Raised when an input injection fails."""
+
     pass
 
 
@@ -37,7 +42,8 @@ def _translate_error(e: Exception) -> Exception:
     msg = str(e)
     if "Disabled" in msg:
         return AutomationDisabledError(
-            "Automation disabled by user. Enable from top bar indicator.")
+            "Automation disabled by user. Enable from top bar indicator."
+        )
     if "WindowNotFound" in msg:
         return WindowNotFoundError(msg)
     if "ScreenshotFailed" in msg:
@@ -57,6 +63,7 @@ class DbusClient:
         # PyGObject / GNOME libraries (e.g. Glama's inspection sandbox).
         try:
             from dasbus.connection import SessionMessageBus
+
             bus = SessionMessageBus()
             self._proxy = bus.get_proxy(BUS_NAME, OBJECT_PATH)
         except Exception as e:
@@ -67,6 +74,7 @@ class DbusClient:
 
     def _call(self, method: str, *args):
         from dasbus.error import DBusError
+
         try:
             return getattr(self._proxy, method)(*args, timeout=self.TIMEOUT_MS)
         except DBusError as e:
@@ -137,13 +145,14 @@ class DbusClient:
     def screenshot(self, include_cursor: bool = False) -> str:
         return self._call("Screenshot", include_cursor)
 
-    def screenshot_window(self, window_id: int,
-                          include_frame: bool = True,
-                          include_cursor: bool = False) -> str:
+    def screenshot_window(
+        self, window_id: int, include_frame: bool = True, include_cursor: bool = False
+    ) -> str:
         return self._call("ScreenshotWindow", window_id, include_frame, include_cursor)
 
-    def screenshot_area(self, x: int, y: int, width: int, height: int,
-                        include_cursor: bool = False) -> str:
+    def screenshot_area(
+        self, x: int, y: int, width: int, height: int, include_cursor: bool = False
+    ) -> str:
         return self._call("ScreenshotArea", x, y, width, height, include_cursor)
 
     def pick_color(self, x: int, y: int) -> tuple[float, float, float]:
@@ -160,8 +169,7 @@ class DbusClient:
     def focus_window(self, window_id: int) -> bool:
         return self._call("FocusWindow", window_id)
 
-    def move_resize_window(self, window_id: int,
-                           x: int, y: int, width: int, height: int) -> bool:
+    def move_resize_window(self, window_id: int, x: int, y: int, width: int, height: int) -> bool:
         return self._call("MoveResizeWindow", window_id, x, y, width, height)
 
     def minimize_window(self, window_id: int) -> bool:
@@ -211,8 +219,7 @@ class DbusClient:
     def mouse_up(self, x: int, y: int, button: int = 1) -> bool:
         return self._call("MouseUp", x, y, button)
 
-    def mouse_drag(self, x1: int, y1: int, x2: int, y2: int,
-                   button: int = 1) -> bool:
+    def mouse_drag(self, x1: int, y1: int, x2: int, y2: int, button: int = 1) -> bool:
         return self._call("MouseDrag", x1, y1, x2, y2, button)
 
     def mouse_scroll(self, x: int, y: int, dx: float, dy: float) -> bool:

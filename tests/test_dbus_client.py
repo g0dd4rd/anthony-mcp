@@ -1,8 +1,12 @@
 from unittest.mock import MagicMock, patch
+
 import pytest
 from anthony_mcp.dbus_client import (
-    DbusClient, AutomationDisabledError, ExtensionNotFoundError,
-    WindowNotFoundError, _translate_error,
+    AutomationDisabledError,
+    DbusClient,
+    ExtensionNotFoundError,
+    WindowNotFoundError,
+    _translate_error,
 )
 from dasbus.error import DBusError
 

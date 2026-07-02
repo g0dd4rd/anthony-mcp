@@ -1,8 +1,9 @@
 """Set desktop wallpaper."""
 
-import subprocess
 import os
+import subprocess
 from pathlib import Path
+
 from . import wallpaper_index
 
 
@@ -37,9 +38,9 @@ def set_wallpaper(image_path: str) -> str:
         return _set_wallpaper_from_path(image_path)
 
     except subprocess.CalledProcessError as e:
-        raise Exception(f"Failed to set wallpaper: {e.stderr}")
+        raise Exception(f"Failed to set wallpaper: {e.stderr}") from e
     except Exception as e:
-        raise Exception(f"Failed to set wallpaper: {e}")
+        raise Exception(f"Failed to set wallpaper: {e}") from e
 
 
 def _is_search_query(query: str) -> bool:
@@ -54,14 +55,28 @@ def _is_search_query(query: str) -> bool:
     query_lower = query.lower().strip()
 
     # Common color keywords
-    colors = {'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink',
-              'cyan', 'black', 'white', 'gray', 'grey', 'dark', 'light'}
+    colors = {
+        "red",
+        "blue",
+        "green",
+        "yellow",
+        "orange",
+        "purple",
+        "pink",
+        "cyan",
+        "black",
+        "white",
+        "gray",
+        "grey",
+        "dark",
+        "light",
+    }
 
     # Common wallpaper names
-    names = {'fedora', 'adwaita', 'default', 'gnome', 'abstract', 'nature'}
+    names = {"fedora", "adwaita", "default", "gnome", "abstract", "nature"}
 
     # If it's a single word and matches color/name, it's a search
-    if ' ' not in query_lower and not query.startswith(('/', '~', '.')):
+    if " " not in query_lower and not query.startswith(("/", "~", ".")):
         if query_lower in colors or query_lower in names:
             return True
 
@@ -128,9 +143,12 @@ def _set_wallpaper_from_path(image_path: str) -> str:
         raise Exception(f"Path is not a file: {image_path}")
 
     # Validate file extension
-    valid_extensions = {'.jpg', '.jpeg', '.png', '.svg', '.bmp', '.gif', '.webp', '.jxl'}
+    valid_extensions = {".jpg", ".jpeg", ".png", ".svg", ".bmp", ".gif", ".webp", ".jxl"}
     if path.suffix.lower() not in valid_extensions:
-        raise Exception(f"Unsupported image format: {path.suffix}. Supported: JPG, JPEG, PNG, SVG, BMP, GIF, WEBP, JXL")
+        raise Exception(
+            f"Unsupported image format: {path.suffix}."
+            " Supported: JPG, JPEG, PNG, SVG, BMP, GIF, WEBP, JXL"
+        )
 
     # Convert to file:// URI
     image_uri = f"file://{path}"
@@ -140,14 +158,14 @@ def _set_wallpaper_from_path(image_path: str) -> str:
         ["gsettings", "set", "org.gnome.desktop.background", "picture-uri", image_uri],
         check=True,
         capture_output=True,
-        text=True
+        text=True,
     )
 
     subprocess.run(
         ["gsettings", "set", "org.gnome.desktop.background", "picture-uri-dark", image_uri],
         check=True,
         capture_output=True,
-        text=True
+        text=True,
     )
 
     return f"Wallpaper set to: {path.name}"

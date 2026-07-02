@@ -1,6 +1,7 @@
 """Quick Settings control for GNOME."""
 
 import subprocess
+
 import dbus
 
 
@@ -18,14 +19,14 @@ def toggle_wifi(enabled: bool) -> str:
     """
     try:
         bus = dbus.SystemBus()
-        nm_obj = bus.get_object('org.freedesktop.NetworkManager', '/org/freedesktop/NetworkManager')
-        nm_props = dbus.Interface(nm_obj, 'org.freedesktop.DBus.Properties')
+        nm_obj = bus.get_object("org.freedesktop.NetworkManager", "/org/freedesktop/NetworkManager")
+        nm_props = dbus.Interface(nm_obj, "org.freedesktop.DBus.Properties")
 
-        nm_props.Set('org.freedesktop.NetworkManager', 'WirelessEnabled', enabled)
+        nm_props.Set("org.freedesktop.NetworkManager", "WirelessEnabled", enabled)
 
         return f"WiFi {'enabled' if enabled else 'disabled'}"
     except Exception as e:
-        raise Exception(f"Failed to toggle WiFi: {e}")
+        raise Exception(f"Failed to toggle WiFi: {e}") from e
 
 
 def toggle_bluetooth(enabled: bool) -> str:
@@ -42,14 +43,14 @@ def toggle_bluetooth(enabled: bool) -> str:
     """
     try:
         bus = dbus.SystemBus()
-        adapter_obj = bus.get_object('org.bluez', '/org/bluez/hci0')
-        adapter_props = dbus.Interface(adapter_obj, 'org.freedesktop.DBus.Properties')
+        adapter_obj = bus.get_object("org.bluez", "/org/bluez/hci0")
+        adapter_props = dbus.Interface(adapter_obj, "org.freedesktop.DBus.Properties")
 
-        adapter_props.Set('org.bluez.Adapter1', 'Powered', enabled)
+        adapter_props.Set("org.bluez.Adapter1", "Powered", enabled)
 
         return f"Bluetooth {'enabled' if enabled else 'disabled'}"
     except Exception as e:
-        raise Exception(f"Failed to toggle Bluetooth: {e}")
+        raise Exception(f"Failed to toggle Bluetooth: {e}") from e
 
 
 def toggle_night_light(enabled: bool) -> str:
@@ -67,15 +68,20 @@ def toggle_night_light(enabled: bool) -> str:
     try:
         value = "true" if enabled else "false"
         subprocess.run(
-            ["gsettings", "set", "org.gnome.settings-daemon.plugins.color",
-             "night-light-enabled", value],
+            [
+                "gsettings",
+                "set",
+                "org.gnome.settings-daemon.plugins.color",
+                "night-light-enabled",
+                value,
+            ],
             check=True,
-            capture_output=True
+            capture_output=True,
         )
 
         return f"Night Light {'enabled' if enabled else 'disabled'}"
     except subprocess.CalledProcessError as e:
-        raise Exception(f"Failed to toggle Night Light: {e.stderr.decode()}")
+        raise Exception(f"Failed to toggle Night Light: {e.stderr.decode()}") from e
 
 
 def toggle_dark_style(enabled: bool) -> str:
@@ -93,15 +99,14 @@ def toggle_dark_style(enabled: bool) -> str:
     try:
         value = "prefer-dark" if enabled else "prefer-light"
         subprocess.run(
-            ["gsettings", "set", "org.gnome.desktop.interface",
-             "color-scheme", value],
+            ["gsettings", "set", "org.gnome.desktop.interface", "color-scheme", value],
             check=True,
-            capture_output=True
+            capture_output=True,
         )
 
         return f"Dark style {'enabled' if enabled else 'disabled'}"
     except subprocess.CalledProcessError as e:
-        raise Exception(f"Failed to toggle dark style: {e.stderr.decode()}")
+        raise Exception(f"Failed to toggle dark style: {e.stderr.decode()}") from e
 
 
 def toggle_do_not_disturb(enabled: bool) -> str:
@@ -122,15 +127,14 @@ def toggle_do_not_disturb(enabled: bool) -> str:
         # Inverted: show-banners=false means DND is enabled
         value = "false" if enabled else "true"
         subprocess.run(
-            ["gsettings", "set", "org.gnome.desktop.notifications",
-             "show-banners", value],
+            ["gsettings", "set", "org.gnome.desktop.notifications", "show-banners", value],
             check=True,
-            capture_output=True
+            capture_output=True,
         )
 
         return f"Do Not Disturb {'enabled' if enabled else 'disabled'}"
     except subprocess.CalledProcessError as e:
-        raise Exception(f"Failed to toggle Do Not Disturb: {e.stderr.decode()}")
+        raise Exception(f"Failed to toggle Do Not Disturb: {e.stderr.decode()}") from e
 
 
 def quick_settings(setting: str, enabled: bool) -> str:
@@ -160,4 +164,7 @@ def quick_settings(setting: str, enabled: bool) -> str:
     elif setting == "do_not_disturb" or setting == "dnd":
         return toggle_do_not_disturb(enabled)
     else:
-        raise Exception(f"Unknown setting: {setting}. Supported: wifi, bluetooth, night_light, dark_style, do_not_disturb")
+        raise Exception(
+            f"Unknown setting: {setting}. Supported:"
+            " wifi, bluetooth, night_light, dark_style, do_not_disturb"
+        )

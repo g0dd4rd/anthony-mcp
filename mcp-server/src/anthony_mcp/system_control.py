@@ -16,7 +16,9 @@ def get_battery_status() -> str:
     try:
         result = subprocess.run(
             ["upower", "-i", "/org/freedesktop/UPower/devices/battery_BAT0"],
-            capture_output=True, text=True, check=True
+            capture_output=True,
+            text=True,
+            check=True,
         )
         info = {}
         for line in result.stdout.splitlines():
@@ -39,9 +41,9 @@ def get_battery_status() -> str:
             msg += f", {remaining} remaining"
         return msg + "."
     except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Failed to read battery status: {e.stderr}")
+        raise RuntimeError(f"Failed to read battery status: {e.stderr}") from e
     except Exception as e:
-        raise RuntimeError(f"Failed to read battery status: {e}")
+        raise RuntimeError(f"Failed to read battery status: {e}") from e
 
 
 def set_brightness(target: str, level: str) -> str:
@@ -82,19 +84,19 @@ def set_brightness(target: str, level: str) -> str:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         for line in result.stdout.splitlines():
             if "Current brightness" in line:
-                pct_match = re.search(r'\((\d+%)\)', line)
+                pct_match = re.search(r"\((\d+%)\)", line)
                 if pct_match:
                     label = "Keyboard backlight" if target == "keyboard" else "Brightness"
                     return f"{label} set to {pct_match.group(1)}."
                 return line.strip()
         label = "Keyboard backlight" if target == "keyboard" else "Brightness"
         return f"{label} set to {level}."
-    except FileNotFoundError:
-        raise RuntimeError("brightnessctl is not installed.")
+    except FileNotFoundError as e:
+        raise RuntimeError("brightnessctl is not installed.") from e
     except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Failed to set brightness: {e.stderr}")
+        raise RuntimeError(f"Failed to set brightness: {e.stderr}") from e
     except Exception as e:
-        raise RuntimeError(f"Failed to set brightness: {e}")
+        raise RuntimeError(f"Failed to set brightness: {e}") from e
 
 
 def get_power_profile() -> str:
@@ -108,19 +110,29 @@ def get_power_profile() -> str:
     """
     try:
         result = subprocess.run(
-            ["gdbus", "call", "--system",
-             "--dest", "net.hadess.PowerProfiles",
-             "--object-path", "/net/hadess/PowerProfiles",
-             "--method", "org.freedesktop.DBus.Properties.Get",
-             "net.hadess.PowerProfiles", "ActiveProfile"],
-            capture_output=True, text=True, check=True
+            [
+                "gdbus",
+                "call",
+                "--system",
+                "--dest",
+                "net.hadess.PowerProfiles",
+                "--object-path",
+                "/net/hadess/PowerProfiles",
+                "--method",
+                "org.freedesktop.DBus.Properties.Get",
+                "net.hadess.PowerProfiles",
+                "ActiveProfile",
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
         )
         profile = result.stdout.strip().strip("(<'>),")
         return f"Power mode is {profile}."
     except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Failed to read power profile: {e.stderr}")
+        raise RuntimeError(f"Failed to read power profile: {e.stderr}") from e
     except Exception as e:
-        raise RuntimeError(f"Failed to read power profile: {e}")
+        raise RuntimeError(f"Failed to read power profile: {e}") from e
 
 
 def set_power_profile(profile: str) -> str:
@@ -151,19 +163,29 @@ def set_power_profile(profile: str) -> str:
         )
     try:
         subprocess.run(
-            ["gdbus", "call", "--system",
-             "--dest", "net.hadess.PowerProfiles",
-             "--object-path", "/net/hadess/PowerProfiles",
-             "--method", "org.freedesktop.DBus.Properties.Set",
-             "net.hadess.PowerProfiles", "ActiveProfile",
-             f"<'{profile_name}'>"],
-            capture_output=True, text=True, check=True
+            [
+                "gdbus",
+                "call",
+                "--system",
+                "--dest",
+                "net.hadess.PowerProfiles",
+                "--object-path",
+                "/net/hadess/PowerProfiles",
+                "--method",
+                "org.freedesktop.DBus.Properties.Set",
+                "net.hadess.PowerProfiles",
+                "ActiveProfile",
+                f"<'{profile_name}'>",
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
         )
         return f"Power mode set to {profile_name}."
     except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Failed to set power profile: {e.stderr}")
+        raise RuntimeError(f"Failed to set power profile: {e.stderr}") from e
     except Exception as e:
-        raise RuntimeError(f"Failed to set power profile: {e}")
+        raise RuntimeError(f"Failed to set power profile: {e}") from e
 
 
 def lock_screen() -> str:
@@ -179,9 +201,9 @@ def lock_screen() -> str:
         subprocess.run(["loginctl", "lock-session"], check=True)
         return "Screen locked."
     except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Failed to lock screen: {e.stderr}")
+        raise RuntimeError(f"Failed to lock screen: {e.stderr}") from e
     except Exception as e:
-        raise RuntimeError(f"Failed to lock screen: {e}")
+        raise RuntimeError(f"Failed to lock screen: {e}") from e
 
 
 def power_action(action: str) -> str:

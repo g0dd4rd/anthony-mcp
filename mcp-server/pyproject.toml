@@ -26,17 +26,20 @@ dependencies = [
     "dasbus>=1.7",
 ]
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=8.0",
-    "pytest-asyncio>=0.23",
-]
-
 [project.scripts]
 anthony-mcp = "anthony_mcp.server:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/anthony_mcp"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.15",
+    "mypy>=2.1",
+    "pre-commit>=4.0",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["../tests"]

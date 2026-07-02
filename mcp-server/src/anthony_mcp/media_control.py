@@ -11,18 +11,18 @@ def find_mpris_players():
     """
     try:
         bus = dbus.SessionBus()
-        dbus_obj = bus.get_object('org.freedesktop.DBus', '/org/freedesktop/DBus')
-        dbus_iface = dbus.Interface(dbus_obj, 'org.freedesktop.DBus')
+        dbus_obj = bus.get_object("org.freedesktop.DBus", "/org/freedesktop/DBus")
+        dbus_iface = dbus.Interface(dbus_obj, "org.freedesktop.DBus")
 
         # Get all bus names
         names = dbus_iface.ListNames()
 
         # Filter for MPRIS players
-        players = [name for name in names if name.startswith('org.mpris.MediaPlayer2.')]
+        players = [name for name in names if name.startswith("org.mpris.MediaPlayer2.")]
 
         return players
     except Exception as e:
-        raise Exception(f"Failed to find media players: {e}")
+        raise Exception(f"Failed to find media players: {e}") from e
 
 
 def media_control(action: str, player: str = "") -> str:
@@ -57,18 +57,19 @@ def media_control(action: str, player: str = "") -> str:
                     break
 
             if not target_player:
-                raise Exception(f"Player '{player}' not found. Available: {', '.join([p.split('.')[-1] for p in players])}")
+                available = ", ".join(p.split(".")[-1] for p in players)
+                raise Exception(f"Player '{player}' not found. Available: {available}")
         else:
             # Use first available player
             target_player = players[0]
 
         # Connect to the MPRIS player
         bus = dbus.SessionBus()
-        player_obj = bus.get_object(target_player, '/org/mpris/MediaPlayer2')
-        player_iface = dbus.Interface(player_obj, 'org.mpris.MediaPlayer2.Player')
+        player_obj = bus.get_object(target_player, "/org/mpris/MediaPlayer2")
+        player_iface = dbus.Interface(player_obj, "org.mpris.MediaPlayer2.Player")
 
         # Execute the requested action
-        player_name = target_player.split('.')[-1]
+        player_name = target_player.split(".")[-1]
 
         if action == "play":
             player_iface.Play()
@@ -89,10 +90,13 @@ def media_control(action: str, player: str = "") -> str:
             player_iface.Previous()
             return f"Skipped to previous track on {player_name}"
         else:
-            raise Exception(f"Unknown action: {action}. Valid actions: play, pause, play_pause, stop, next, previous")
+            raise Exception(
+                f"Unknown action: {action}. Valid actions:"
+                " play, pause, play_pause, stop, next, previous"
+            )
 
     except Exception as e:
-        raise Exception(f"Media control failed: {e}")
+        raise Exception(f"Media control failed: {e}") from e
 
 
 def get_media_status(player: str = "") -> dict:
@@ -127,30 +131,34 @@ def get_media_status(player: str = "") -> dict:
 
         # Connect to the player
         bus = dbus.SessionBus()
-        player_obj = bus.get_object(target_player, '/org/mpris/MediaPlayer2')
+        player_obj = bus.get_object(target_player, "/org/mpris/MediaPlayer2")
 
         # Get properties interface
-        props_iface = dbus.Interface(player_obj, 'org.freedesktop.DBus.Properties')
+        props_iface = dbus.Interface(player_obj, "org.freedesktop.DBus.Properties")
 
         # Get playback status
-        status = props_iface.Get('org.mpris.MediaPlayer2.Player', 'PlaybackStatus')
+        status = props_iface.Get("org.mpris.MediaPlayer2.Player", "PlaybackStatus")
 
         # Get metadata
-        metadata = props_iface.Get('org.mpris.MediaPlayer2.Player', 'Metadata')
+        metadata = props_iface.Get("org.mpris.MediaPlayer2.Player", "Metadata")
 
-        player_name = target_player.split('.')[-1]
+        player_name = target_player.split(".")[-1]
 
         # Extract useful metadata
-        title = metadata.get('xesam:title', 'Unknown')
-        artist = metadata.get('xesam:artist', ['Unknown'])[0] if 'xesam:artist' in metadata else 'Unknown'
-        album = metadata.get('xesam:album', 'Unknown')
+        title = metadata.get("xesam:title", "Unknown")
+        artist = (
+            metadata.get("xesam:artist", ["Unknown"])[0]
+            if "xesam:artist" in metadata
+            else "Unknown"
+        )
+        album = metadata.get("xesam:album", "Unknown")
 
         return {
             "player": player_name,
             "status": str(status),  # Playing, Paused, or Stopped
             "title": str(title),
             "artist": str(artist),
-            "album": str(album)
+            "album": str(album),
         }
 
     except Exception as e:

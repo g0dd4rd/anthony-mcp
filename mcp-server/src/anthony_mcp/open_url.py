@@ -21,7 +21,7 @@ def open_url(url: str) -> str:
     try:
         # Normalize URL - add https:// if no protocol
         normalized_url = url
-        if not url.startswith(('http://', 'https://', 'file://', 'ftp://')):
+        if not url.startswith(("http://", "https://", "file://", "ftp://")):
             normalized_url = f"https://{url}"
 
         # Open with xdg-open (opens in default browser)
@@ -30,10 +30,10 @@ def open_url(url: str) -> str:
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             stdin=subprocess.DEVNULL,
-            start_new_session=True
+            start_new_session=True,
         )
 
         return f"Opened URL: {normalized_url}"
 
     except Exception as e:
-        raise Exception(f"Failed to open URL '{url}': {e}")
+        raise Exception(f"Failed to open URL '{url}': {e}") from e

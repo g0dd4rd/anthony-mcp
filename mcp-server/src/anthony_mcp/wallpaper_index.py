@@ -3,16 +3,15 @@
 import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import List, Dict, Tuple, Optional
 
 
-def hex_to_rgb(hex_color: str) -> Tuple[int, int, int]:
+def hex_to_rgb(hex_color: str) -> tuple[int, int, int]:
     """Convert hex color to RGB tuple."""
-    hex_color = hex_color.lstrip('#')
-    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+    hex_color = hex_color.lstrip("#")
+    return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
 
 
-def rgb_to_color_name(rgb: Tuple[int, int, int]) -> str:
+def rgb_to_color_name(rgb: tuple[int, int, int]) -> str:
     """Convert RGB to basic color name using simple heuristic."""
     r, g, b = rgb
 
@@ -69,7 +68,7 @@ def rgb_to_color_name(rgb: Tuple[int, int, int]) -> str:
     return "gray"
 
 
-def index_wallpapers() -> List[Dict[str, str]]:
+def index_wallpapers() -> list[dict[str, str]]:
     """Index all GNOME wallpapers from XML metadata.
 
     Returns:
@@ -83,17 +82,17 @@ def index_wallpapers() -> List[Dict[str, str]]:
 
     for xml_file in xml_dir.glob("*.xml"):
         try:
-            tree = ET.parse(xml_file)
+            tree = ET.parse(xml_file)  # noqa: S314
             root = tree.getroot()
 
-            for wp in root.findall('wallpaper'):
+            for wp in root.findall("wallpaper"):
                 # Skip deleted wallpapers
-                if wp.get('deleted') == 'true':
+                if wp.get("deleted") == "true":
                     continue
 
-                name_elem = wp.find('name')
-                filename_elem = wp.find('filename')
-                pcolor_elem = wp.find('pcolor')
+                name_elem = wp.find("name")
+                filename_elem = wp.find("filename")
+                pcolor_elem = wp.find("pcolor")
 
                 if name_elem is None or filename_elem is None:
                     continue
@@ -111,21 +110,18 @@ def index_wallpapers() -> List[Dict[str, str]]:
                     rgb = hex_to_rgb(pcolor_elem.text)
                     color_name = rgb_to_color_name(rgb)
 
-                wallpapers.append({
-                    'name': name,
-                    'path': path,
-                    'color': color_name,
-                    'xml_file': xml_file.name
-                })
+                wallpapers.append(
+                    {"name": name, "path": path, "color": color_name, "xml_file": xml_file.name}
+                )
 
-        except Exception as e:
+        except Exception:  # noqa: S112
             # Skip files that can't be parsed
             continue
 
     return wallpapers
 
 
-def search_wallpaper_by_color(color_query: str) -> Optional[str]:
+def search_wallpaper_by_color(color_query: str) -> str | None:
     """Search for a wallpaper by color name.
 
     Args:
@@ -143,24 +139,24 @@ def search_wallpaper_by_color(color_query: str) -> Optional[str]:
     color_query = color_query.lower().strip()
 
     # Try exact color match first
-    matches = [wp for wp in wallpapers if wp['color'] == color_query]
+    matches = [wp for wp in wallpapers if wp["color"] == color_query]
 
     # Try partial match (e.g., "dark-blue" matches "blue")
     if not matches:
-        matches = [wp for wp in wallpapers if wp['color'] and color_query in wp['color']]
+        matches = [wp for wp in wallpapers if wp["color"] and color_query in wp["color"]]
 
     # Try reverse partial match (e.g., "blue" matches "dark-blue")
     if not matches:
-        matches = [wp for wp in wallpapers if wp['color'] and wp['color'] in color_query]
+        matches = [wp for wp in wallpapers if wp["color"] and wp["color"] in color_query]
 
     if matches:
         # Return first match
-        return matches[0]['path']
+        return matches[0]["path"]
 
     return None
 
 
-def search_wallpaper_by_name(name_query: str) -> Optional[str]:
+def search_wallpaper_by_name(name_query: str) -> str | None:
     """Search for a wallpaper by name.
 
     Args:
@@ -179,8 +175,8 @@ def search_wallpaper_by_name(name_query: str) -> Optional[str]:
 
     # Try case-insensitive name match
     for wp in wallpapers:
-        if name_query in wp['name'].lower():
-            return wp['path']
+        if name_query in wp["name"].lower():
+            return wp["path"]
 
     return None
 
@@ -201,7 +197,7 @@ def list_available_wallpapers() -> str:
     # Group by color
     by_color = {}
     for wp in wallpapers:
-        color = wp['color'] or 'unknown'
+        color = wp["color"] or "unknown"
         if color not in by_color:
             by_color[color] = []
         by_color[color].append(wp)

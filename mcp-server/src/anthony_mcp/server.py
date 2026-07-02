@@ -1,16 +1,21 @@
 """MCP server for GNOME desktop automation."""
 
 import json
-import time
-import threading
 import re
-import subprocess
+import threading
+import time
+
 from mcp.server.fastmcp import FastMCP
+
 from anthony_mcp.dbus_client import (
-    DbusClient, AutomationDisabledError, ExtensionNotFoundError,
-    WindowNotFoundError, ScreenshotFailedError, InputFailedError,
+    AutomationDisabledError,
+    DbusClient,
+    ExtensionNotFoundError,
+    InputFailedError,
+    ScreenshotFailedError,
+    WindowNotFoundError,
 )
-from anthony_mcp.utils import friendly_to_keyval, translate_combo, file_to_base64, cleanup_file
+from anthony_mcp.utils import cleanup_file, file_to_base64, friendly_to_keyval, translate_combo
 
 mcp = FastMCP(
     "gnome-desktop-automation",
@@ -43,6 +48,7 @@ def _handle_error(e: Exception) -> str:
 
 # --- Screenshot Tools ---
 
+
 @mcp.tool()
 def screenshot(include_cursor: bool = False, format: str = "path") -> str:
     """Take a full screenshot of the entire screen.
@@ -64,9 +70,9 @@ def screenshot(include_cursor: bool = False, format: str = "path") -> str:
 
 
 @mcp.tool()
-def screenshot_window(window_id: int, include_frame: bool = True,
-                      include_cursor: bool = False,
-                      format: str = "path") -> str:
+def screenshot_window(
+    window_id: int, include_frame: bool = True, include_cursor: bool = False, format: str = "path"
+) -> str:
     """Take a screenshot of a specific window.
 
     Args:
@@ -88,9 +94,9 @@ def screenshot_window(window_id: int, include_frame: bool = True,
 
 
 @mcp.tool()
-def screenshot_area(x: int, y: int, width: int, height: int,
-                    include_cursor: bool = False,
-                    format: str = "path") -> str:
+def screenshot_area(
+    x: int, y: int, width: int, height: int, include_cursor: bool = False, format: str = "path"
+) -> str:
     """Take a screenshot of a rectangular screen region.
 
     Args:
@@ -133,6 +139,7 @@ def pick_color(x: int, y: int) -> str:
 
 
 # --- Window Tools ---
+
 
 @mcp.tool()
 def list_windows() -> str:
@@ -177,8 +184,7 @@ def focus_window(window_id: int) -> str:
 
 
 @mcp.tool()
-def move_resize_window(window_id: int, x: int, y: int,
-                       width: int, height: int) -> str:
+def move_resize_window(window_id: int, x: int, y: int, width: int, height: int) -> str:
     """Move and resize a window. Unmaximizes first if needed.
 
     Args:
@@ -273,6 +279,7 @@ def activate_workspace(index: int) -> str:
 
 
 # --- Input Tools ---
+
 
 @mcp.tool()
 def key_press(key: str) -> str:
@@ -438,6 +445,7 @@ def mouse_scroll(x: int, y: int, dx: float, dy: float) -> str:
 
 # --- Utility Tools ---
 
+
 @mcp.tool()
 def get_monitors() -> str:
     """List all monitors with their geometry and scale."""
@@ -521,22 +529,25 @@ def send_notification(summary: str, body: str = "", delay: str = "") -> str:
         total_seconds = 0
 
         # Match hours
-        hours_match = re.search(r'(\d+)\s*(?:hour|hr|hours|hrs)', delay_lower)
+        hours_match = re.search(r"(\d+)\s*(?:hour|hr|hours|hrs)", delay_lower)
         if hours_match:
             total_seconds += int(hours_match.group(1)) * 3600
 
         # Match minutes
-        minutes_match = re.search(r'(\d+)\s*(?:minute|min|minutes|mins)', delay_lower)
+        minutes_match = re.search(r"(\d+)\s*(?:minute|min|minutes|mins)", delay_lower)
         if minutes_match:
             total_seconds += int(minutes_match.group(1)) * 60
 
         # Match seconds
-        seconds_match = re.search(r'(\d+)\s*(?:second|sec|seconds|secs)', delay_lower)
+        seconds_match = re.search(r"(\d+)\s*(?:second|sec|seconds|secs)", delay_lower)
         if seconds_match:
             total_seconds += int(seconds_match.group(1))
 
         if total_seconds == 0:
-            return f"Error: Could not parse delay '{delay}'. Use format like '5 minutes', '1 hour', '30 seconds'"
+            return (
+                f"Error: Could not parse delay '{delay}'."
+                " Use format like '5 minutes', '1 hour', '30 seconds'"
+            )
 
         # Start background thread to send notification after delay
         def send_delayed():
@@ -551,17 +562,21 @@ def send_notification(summary: str, body: str = "", delay: str = "") -> str:
             hours = total_seconds // 3600
             remaining = total_seconds % 3600
             minutes = remaining // 60
+            h_s = "s" if hours > 1 else ""
+            m_s = "s" if minutes > 1 else ""
             if minutes > 0:
-                delay_text = f"{hours} hour{'s' if hours > 1 else ''} and {minutes} minute{'s' if minutes > 1 else ''}"
+                delay_text = f"{hours} hour{h_s} and {minutes} minute{m_s}"
             else:
-                delay_text = f"{hours} hour{'s' if hours > 1 else ''}"
+                delay_text = f"{hours} hour{h_s}"
         elif total_seconds >= 60:
             minutes = total_seconds // 60
             remaining = total_seconds % 60
+            m_s = "s" if minutes > 1 else ""
+            s_s = "s" if remaining > 1 else ""
             if remaining > 0:
-                delay_text = f"{minutes} minute{'s' if minutes > 1 else ''} and {remaining} second{'s' if remaining > 1 else ''}"
+                delay_text = f"{minutes} minute{m_s} and {remaining} second{s_s}"
             else:
-                delay_text = f"{minutes} minute{'s' if minutes > 1 else ''}"
+                delay_text = f"{minutes} minute{m_s}"
         else:
             delay_text = f"{total_seconds} second{'s' if total_seconds > 1 else ''}"
 
@@ -580,6 +595,7 @@ def get_volume() -> str:
     """
     try:
         from . import volume_control
+
         volume_info = volume_control.get_volume()
         return json.dumps(volume_info)
     except Exception as e:
@@ -600,6 +616,7 @@ def set_volume(volume: int, relative: bool = False) -> str:
     """
     try:
         from . import volume_control
+
         message = volume_control.set_volume(volume, relative)
         return message
     except Exception as e:
@@ -618,6 +635,7 @@ def mute_volume(mute: bool = True) -> str:
     """
     try:
         from . import volume_control
+
         message = volume_control.mute_volume(mute)
         return message
     except Exception as e:
@@ -640,6 +658,7 @@ def media_control(action: str, player: str = "") -> str:
     """
     try:
         from . import media_control as mc
+
         message = mc.media_control(action, player)
         return message
     except Exception as e:
@@ -659,6 +678,7 @@ def get_media_status(player: str = "") -> str:
     """
     try:
         from . import media_control as mc
+
         status = mc.get_media_status(player)
         return json.dumps(status)
     except Exception as e:
@@ -679,6 +699,7 @@ def quick_settings(setting: str, enabled: bool) -> str:
     """
     try:
         from . import quick_settings as qs
+
         message = qs.quick_settings(setting, enabled)
         return message
     except Exception as e:
@@ -700,6 +721,7 @@ def open_file(path: str, search_location: str = "") -> str:
     """
     try:
         from . import open_file as of
+
         message = of.open_file(path, search_location)
         return message
     except Exception as e:
@@ -719,6 +741,7 @@ def open_url(url: str) -> str:
     """
     try:
         from . import open_url as ou
+
         message = ou.open_url(url)
         return message
     except Exception as e:
@@ -732,7 +755,8 @@ def search_files(query: str, file_type: str = "files", limit: int = 10) -> str:
     Args:
         query: Search query - filename, keywords, or content to search for.
         file_type: Type of files to search.
-                   Options: files, folders, images, videos, documents, audio, music_albums, music_artists, software
+                   Options: files, folders, images, videos, documents,
+                   audio, music_albums, music_artists, software
                    Default: files
         limit: Maximum number of results (1-50, default: 10)
 
@@ -741,6 +765,7 @@ def search_files(query: str, file_type: str = "files", limit: int = 10) -> str:
     """
     try:
         from . import search_files as sf
+
         result = sf.search_files(query, file_type, limit)
         return result
     except Exception as e:
@@ -765,6 +790,7 @@ def set_wallpaper(image_path: str) -> str:
     """
     try:
         from . import wallpaper
+
         result = wallpaper.set_wallpaper(image_path)
         return result
     except Exception as e:
@@ -783,6 +809,7 @@ def get_battery_status() -> str:
     """
     try:
         from . import system_control
+
         return system_control.get_battery_status()
     except Exception as e:
         return _handle_error(e)
@@ -801,6 +828,7 @@ def set_brightness(target: str = "screen", level: str = "50%") -> str:
     """
     try:
         from . import system_control
+
         return system_control.set_brightness(target, level)
     except Exception as e:
         return _handle_error(e)
@@ -815,6 +843,7 @@ def get_power_profile() -> str:
     """
     try:
         from . import system_control
+
         return system_control.get_power_profile()
     except Exception as e:
         return _handle_error(e)
@@ -832,6 +861,7 @@ def set_power_profile(profile: str) -> str:
     """
     try:
         from . import system_control
+
         return system_control.set_power_profile(profile)
     except Exception as e:
         return _handle_error(e)
@@ -846,6 +876,7 @@ def lock_screen() -> str:
     """
     try:
         from . import system_control
+
         return system_control.lock_screen()
     except Exception as e:
         return _handle_error(e)
@@ -863,6 +894,7 @@ def power_action(action: str) -> str:
     """
     try:
         from . import system_control
+
         return system_control.power_action(action)
     except Exception as e:
         return _handle_error(e)

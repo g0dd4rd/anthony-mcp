@@ -10,8 +10,9 @@ import os
 from pathlib import Path
 
 import gi
-gi.require_version('Gdk', '4.0')
-from gi.repository import Gdk
+
+gi.require_version("Gdk", "4.0")
+from gi.repository import Gdk  # noqa: E402
 
 # Friendly name -> Clutter/GDK key name.
 # Modifiers and keys whose GDK name differs from the friendly name.
@@ -58,7 +59,7 @@ for _i in range(1, 13):
 
 def _gdk_valid(name: str) -> bool:
     """Check if a key name is recognized by GDK."""
-    return Gdk.keyval_from_name(name) not in (0, 0xffffff)
+    return Gdk.keyval_from_name(name) not in (0, 0xFFFFFF)
 
 
 def friendly_to_clutter_name(key: str) -> str:
@@ -96,7 +97,7 @@ def friendly_to_keyval(key: str) -> int:
     """Translate a friendly key name to an X11 keyval."""
     gdk_name = friendly_to_clutter_name(key)
     kv = Gdk.keyval_from_name(gdk_name)
-    if kv not in (0, 0xffffff):
+    if kv not in (0, 0xFFFFFF):
         return kv
     if len(gdk_name) == 1:
         return Gdk.unicode_to_keyval(ord(gdk_name))

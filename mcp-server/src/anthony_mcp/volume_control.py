@@ -1,8 +1,7 @@
 """Volume control using pactl (works with PipeWire)."""
 
-import subprocess
-import json
 import re
+import subprocess
 
 
 def get_volume() -> dict:
@@ -17,11 +16,11 @@ def get_volume() -> dict:
             ["pactl", "get-sink-volume", "@DEFAULT_SINK@"],
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
 
         # Parse volume from output like: "Volume: front-left: 65536 / 100% / 0.00 dB"
-        volume_match = re.search(r'(\d+)%', result.stdout)
+        volume_match = re.search(r"(\d+)%", result.stdout)
         if not volume_match:
             raise ValueError("Could not parse volume from pactl output")
 
@@ -29,24 +28,18 @@ def get_volume() -> dict:
 
         # Get mute status
         result = subprocess.run(
-            ["pactl", "get-sink-mute", "@DEFAULT_SINK@"],
-            capture_output=True,
-            text=True,
-            check=True
+            ["pactl", "get-sink-mute", "@DEFAULT_SINK@"], capture_output=True, text=True, check=True
         )
 
         # Parse mute status from output like: "Mute: no"
         muted = "yes" in result.stdout.lower()
 
-        return {
-            "volume": volume,
-            "muted": muted
-        }
+        return {"volume": volume, "muted": muted}
 
     except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Failed to get volume: {e.stderr}")
+        raise RuntimeError(f"Failed to get volume: {e.stderr}") from e
     except Exception as e:
-        raise RuntimeError(f"Failed to get volume: {str(e)}")
+        raise RuntimeError(f"Failed to get volume: {str(e)}") from e
 
 
 def set_volume(volume: int, relative: bool = False) -> str:
@@ -82,9 +75,9 @@ def set_volume(volume: int, relative: bool = False) -> str:
         return message
 
     except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Failed to set volume: {e.stderr}")
+        raise RuntimeError(f"Failed to set volume: {e.stderr}") from e
     except Exception as e:
-        raise RuntimeError(f"Failed to set volume: {str(e)}")
+        raise RuntimeError(f"Failed to set volume: {str(e)}") from e
 
 
 def mute_volume(mute: bool = True) -> str:
@@ -99,14 +92,12 @@ def mute_volume(mute: bool = True) -> str:
     try:
         value = "1" if mute else "0"
         subprocess.run(
-            ["pactl", "set-sink-mute", "@DEFAULT_SINK@", value],
-            check=True,
-            capture_output=True
+            ["pactl", "set-sink-mute", "@DEFAULT_SINK@", value], check=True, capture_output=True
         )
 
         return "Muted" if mute else "Unmuted"
 
     except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Failed to mute/unmute: {e.stderr}")
+        raise RuntimeError(f"Failed to mute/unmute: {e.stderr}") from e
     except Exception as e:
-        raise RuntimeError(f"Failed to mute/unmute: {str(e)}")
+        raise RuntimeError(f"Failed to mute/unmute: {str(e)}") from e
