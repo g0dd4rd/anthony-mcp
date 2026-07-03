@@ -191,10 +191,12 @@ class KdeClient:
 
     def __init__(self):
         uid = os.getuid()
+        runtime_dir = f"/run/user/{uid}"
         defaults = {
-            "DBUS_SESSION_BUS_ADDRESS": f"unix:path=/run/user/{uid}/bus",
-            "XDG_RUNTIME_DIR": f"/run/user/{uid}",
+            "DBUS_SESSION_BUS_ADDRESS": f"unix:path={runtime_dir}/bus",
+            "XDG_RUNTIME_DIR": runtime_dir,
             "WAYLAND_DISPLAY": "wayland-0",
+            "YDOTOOL_SOCKET": "/tmp/.ydotool_socket",
         }
         for key, value in defaults.items():
             if key not in os.environ:
@@ -225,6 +227,25 @@ class KdeClient:
                 script_path = f.name
 
             try:
+                # Unload any stale script left from a previous crash
+                subprocess.run(
+                    [
+                        "gdbus",
+                        "call",
+                        "--session",
+                        "--dest",
+                        "org.kde.KWin",
+                        "--object-path",
+                        "/Scripting",
+                        "--method",
+                        "org.kde.kwin.Scripting.unloadScript",
+                        "anthony-mcp-temp",
+                    ],
+                    capture_output=True,
+                    text=True,
+                    timeout=2,
+                )
+
                 result = subprocess.run(
                     [
                         "gdbus",
