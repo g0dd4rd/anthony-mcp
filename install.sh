@@ -67,6 +67,10 @@ if [ "$DE" = "kde" ]; then
         KDE_PACKAGES+=("ImageMagick")
     fi
 
+    if ! command -v brightnessctl &>/dev/null; then
+        KDE_PACKAGES+=("brightnessctl")
+    fi
+
     if [ ${#KDE_PACKAGES[@]} -gt 0 ]; then
         echo "Installing: ${KDE_PACKAGES[*]}"
         sudo dnf install -y "${KDE_PACKAGES[@]}"

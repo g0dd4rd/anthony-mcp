@@ -149,7 +149,7 @@ def _friendly_to_evdev(key: str) -> int:
 
 
 # ydotool mouse button mapping (X11 button -> ydotool hex)
-_YDOTOOL_BUTTONS = {1: "0x00", 2: "0x02", 3: "0x01"}
+_YDOTOOL_BUTTONS = {1: "0xC0", 2: "0xC2", 3: "0xC1"}
 
 
 class _KWinBridge:
@@ -381,11 +381,14 @@ class KdeClient:
         for (var i = 0; i < screens.length; i++) {
             var s = screens[i];
             var geo = s.geometry;
+            var wa = workspace.clientArea(KWin.MaximizeArea, s, workspace.currentDesktop);
             result.push({
                 index: i,
                 name: s.name,
                 x: geo.x, y: geo.y,
                 width: geo.width, height: geo.height,
+                workAreaX: wa.x, workAreaY: wa.y,
+                workAreaWidth: wa.width, workAreaHeight: wa.height,
                 scale: s.devicePixelRatio || 1.0,
                 primary: (i === 0)
             });
@@ -755,9 +758,9 @@ class KdeClient:
 
     def mouse_down(self, x: int, y: int, button: int = 1) -> bool:
         self.mouse_move(x, y)
-        keycode = {1: 272, 2: 274, 3: 273}.get(button, 272)
+        btn_code = {1: 0x40, 2: 0x42, 3: 0x41}.get(button, 0x40)
         subprocess.run(
-            ["ydotool", "key", f"{keycode}:1"],
+            ["ydotool", "click", f"0x{btn_code:02X}"],
             capture_output=True,
             text=True,
             timeout=5,
@@ -766,9 +769,9 @@ class KdeClient:
 
     def mouse_up(self, x: int, y: int, button: int = 1) -> bool:
         self.mouse_move(x, y)
-        keycode = {1: 272, 2: 274, 3: 273}.get(button, 272)
+        btn_code = {1: 0x80, 2: 0x82, 3: 0x81}.get(button, 0x80)
         subprocess.run(
-            ["ydotool", "key", f"{keycode}:0"],
+            ["ydotool", "click", f"0x{btn_code:02X}"],
             capture_output=True,
             text=True,
             timeout=5,
@@ -785,15 +788,12 @@ class KdeClient:
 
     def mouse_scroll(self, x: int, y: int, dx: float, dy: float) -> bool:
         self.mouse_move(x, y)
-        # Simulate scroll via ydotool key events (wheel up=REL_WHEEL)
-        # ydotool mousemove doesn't support scroll directly in all versions
-        # Use key-based approach: Up=KEY_SCROLLUP, Down=KEY_SCROLLDOWN
         if dy != 0:
-            steps = abs(int(dy))
-            direction = "4" if dy > 0 else "5"  # 4=scroll down, 5=scroll up
-            for _ in range(max(1, steps)):
+            steps = abs(int(dy)) or 1
+            btn = "0xC4" if dy > 0 else "0xC5"  # 0xC4=scroll down, 0xC5=scroll up
+            for _ in range(steps):
                 subprocess.run(
-                    ["ydotool", "click", f"0x0{direction}"],
+                    ["ydotool", "click", btn],
                     capture_output=True,
                     text=True,
                     timeout=5,
