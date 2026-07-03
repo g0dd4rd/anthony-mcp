@@ -1,40 +1,18 @@
-"""D-Bus client for the Desktop Automation extension."""
+"""D-Bus client for the GNOME Desktop Automation extension."""
 
 import json
+
+from anthony_mcp.exceptions import (
+    AutomationDisabledError,
+    ExtensionNotFoundError,
+    InputFailedError,
+    ScreenshotFailedError,
+    WindowNotFoundError,
+)
 
 IFACE = "io.github.anthonymcp.DesktopAutomation"
 BUS_NAME = "org.gnome.Shell"
 OBJECT_PATH = "/io/github/anthonymcp/DesktopAutomation"
-
-
-class AutomationDisabledError(Exception):
-    """Raised when automation is disabled by user."""
-
-    pass
-
-
-class ExtensionNotFoundError(Exception):
-    """Raised when the extension is not installed or enabled."""
-
-    pass
-
-
-class WindowNotFoundError(Exception):
-    """Raised when a window ID is invalid."""
-
-    pass
-
-
-class ScreenshotFailedError(Exception):
-    """Raised when a screenshot operation fails."""
-
-    pass
-
-
-class InputFailedError(Exception):
-    """Raised when an input injection fails."""
-
-    pass
 
 
 def _translate_error(e: Exception) -> Exception:
@@ -146,9 +124,9 @@ class DbusClient:
         return self._call("Screenshot", include_cursor)
 
     def screenshot_window(
-        self, window_id: int, include_frame: bool = True, include_cursor: bool = False
+        self, window_id: str, include_frame: bool = True, include_cursor: bool = False
     ) -> str:
-        return self._call("ScreenshotWindow", window_id, include_frame, include_cursor)
+        return self._call("ScreenshotWindow", int(window_id), include_frame, include_cursor)
 
     def screenshot_area(
         self, x: int, y: int, width: int, height: int, include_cursor: bool = False
@@ -163,29 +141,29 @@ class DbusClient:
     def list_windows(self) -> list[dict]:
         return json.loads(self._call("ListWindows"))
 
-    def get_window(self, window_id: int) -> dict:
-        return json.loads(self._call("GetWindow", window_id))
+    def get_window(self, window_id: str) -> dict:
+        return json.loads(self._call("GetWindow", int(window_id)))
 
-    def focus_window(self, window_id: int) -> bool:
-        return self._call("FocusWindow", window_id)
+    def focus_window(self, window_id: str) -> bool:
+        return self._call("FocusWindow", int(window_id))
 
-    def move_resize_window(self, window_id: int, x: int, y: int, width: int, height: int) -> bool:
-        return self._call("MoveResizeWindow", window_id, x, y, width, height)
+    def move_resize_window(self, window_id: str, x: int, y: int, width: int, height: int) -> bool:
+        return self._call("MoveResizeWindow", int(window_id), x, y, width, height)
 
-    def minimize_window(self, window_id: int) -> bool:
-        return self._call("MinimizeWindow", window_id)
+    def minimize_window(self, window_id: str) -> bool:
+        return self._call("MinimizeWindow", int(window_id))
 
-    def unminimize_window(self, window_id: int) -> bool:
-        return self._call("UnminimizeWindow", window_id)
+    def unminimize_window(self, window_id: str) -> bool:
+        return self._call("UnminimizeWindow", int(window_id))
 
-    def maximize_window(self, window_id: int) -> bool:
-        return self._call("MaximizeWindow", window_id)
+    def maximize_window(self, window_id: str) -> bool:
+        return self._call("MaximizeWindow", int(window_id))
 
-    def unmaximize_window(self, window_id: int) -> bool:
-        return self._call("UnmaximizeWindow", window_id)
+    def unmaximize_window(self, window_id: str) -> bool:
+        return self._call("UnmaximizeWindow", int(window_id))
 
-    def close_window(self, window_id: int) -> bool:
-        return self._call("CloseWindow", window_id)
+    def close_window(self, window_id: str) -> bool:
+        return self._call("CloseWindow", int(window_id))
 
     def list_workspaces(self) -> list[dict]:
         return json.loads(self._call("ListWorkspaces"))
@@ -193,16 +171,22 @@ class DbusClient:
     def activate_workspace(self, index: int) -> bool:
         return self._call("ActivateWorkspace", index)
 
-    def move_window_to_workspace(self, window_id: int, workspace_index: int) -> bool:
-        return self._call("MoveWindowToWorkspace", window_id, workspace_index)
+    def move_window_to_workspace(self, window_id: str, workspace_index: int) -> bool:
+        return self._call("MoveWindowToWorkspace", int(window_id), workspace_index)
 
     # --- Input ---
 
-    def key_press(self, keyval: int) -> bool:
+    def key_press(self, key: str) -> bool:
+        from anthony_mcp.utils import friendly_to_keyval
+
+        keyval = friendly_to_keyval(key)
         return self._call("KeyPress", keyval)
 
     def key_combo(self, combo: str) -> bool:
-        return self._call("KeyCombo", combo)
+        from anthony_mcp.utils import translate_combo
+
+        translated = translate_combo(combo)
+        return self._call("KeyCombo", translated)
 
     def type_text(self, text: str) -> bool:
         return self._call("TypeText", text)
