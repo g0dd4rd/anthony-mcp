@@ -139,7 +139,10 @@ class DbusClient:
     # --- Windows ---
 
     def list_windows(self) -> list[dict]:
-        return json.loads(self._call("ListWindows"))
+        windows = json.loads(self._call("ListWindows"))
+        for w in windows:
+            w["id"] = str(w["id"])
+        return windows
 
     def get_window(self, window_id: str) -> dict:
         return json.loads(self._call("GetWindow", int(window_id)))
