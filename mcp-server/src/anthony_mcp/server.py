@@ -458,6 +458,15 @@ def mouse_scroll(x: int, y: int, dx: float, dy: float) -> str:
 # --- Utility Tools ---
 
 
+def _get_window_monitor(client, window_id):
+    """Return (window_dict, monitor_geometry) for the monitor the window is on."""
+    window = client.get_window(window_id)
+    monitors = client.get_monitors()
+    current_idx = window.get("monitor", 0)
+    mon = next((m for m in monitors if m["index"] == current_idx), monitors[0])
+    return window, mon, monitors
+
+
 @mcp.tool()
 def move_window_to_monitor(window_id: str, monitor: str) -> str:
     """Move a window to a target monitor.
@@ -468,17 +477,15 @@ def move_window_to_monitor(window_id: str, monitor: str) -> str:
     """
     try:
         client = _get_client()
-        monitors = client.get_monitors()
+        window, current_mon, monitors = _get_window_monitor(client, window_id)
+
         if len(monitors) < 2:
             return "Only one monitor connected"
 
         sorted_mons = sorted(monitors, key=lambda m: (not m.get("primary", False), m["index"]))
 
-        window = client.get_window(window_id)
-        current_idx = window.get("monitor", 0)
-
         if monitor == "other":
-            dest = next((m for m in monitors if m["index"] != current_idx), None)
+            dest = next((m for m in monitors if m["index"] != current_mon["index"]), None)
         else:
             user_idx = int(monitor) - 1
             if 0 <= user_idx < len(sorted_mons):
