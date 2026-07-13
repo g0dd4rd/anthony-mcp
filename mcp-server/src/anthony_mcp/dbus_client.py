@@ -20,7 +20,8 @@ def _translate_error(e: Exception) -> Exception:
     msg = str(e)
     if "Disabled" in msg:
         return AutomationDisabledError(
-            "Automation disabled by user. Enable from top bar indicator."
+            "Automation is disabled."
+            " You can enable it from the top bar indicator or by voice command."
         )
     if "WindowNotFound" in msg:
         return WindowNotFoundError(msg)
