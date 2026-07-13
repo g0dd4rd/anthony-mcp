@@ -459,6 +459,48 @@ def mouse_scroll(x: int, y: int, dx: float, dy: float) -> str:
 
 
 @mcp.tool()
+def move_window_to_monitor(window_id: str, monitor: str) -> str:
+    """Move a window to a target monitor.
+
+    Args:
+        window_id: The window's stable ID.
+        monitor: Target monitor — "1", "2" (1-based, primary=1), or "other".
+    """
+    try:
+        client = _get_client()
+        monitors = client.get_monitors()
+        if len(monitors) < 2:
+            return "Only one monitor connected"
+
+        sorted_mons = sorted(monitors, key=lambda m: (not m.get("primary", False), m["index"]))
+
+        window = client.get_window(window_id)
+        current_idx = window.get("monitor", 0)
+
+        if monitor == "other":
+            dest = next((m for m in monitors if m["index"] != current_idx), None)
+        else:
+            user_idx = int(monitor) - 1
+            if 0 <= user_idx < len(sorted_mons):
+                dest = sorted_mons[user_idx]
+            else:
+                return f"Monitor {monitor} not found"
+
+        if not dest:
+            return f"Monitor {monitor} not found"
+
+        win_w = window.get("width", 800)
+        win_h = window.get("height", 600)
+        dest_x = dest["x"] + (dest["width"] - win_w) // 2
+        dest_y = dest["y"] + (dest["height"] - win_h) // 2
+
+        client.move_resize_window(window_id, dest_x, dest_y, win_w, win_h)
+        return f"Window moved to monitor {monitor}"
+    except Exception as e:
+        return _handle_error(e)
+
+
+@mcp.tool()
 def get_monitors() -> str:
     """List all monitors with their geometry and scale."""
     try:
